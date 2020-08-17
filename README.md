@@ -9,4 +9,7 @@ Requirements
 2. A function call result has to be printed as "Function name (argument value) = function value, duration xx.xxx seconds"
 3. Unit tests
 4. Add cache, check recursion depth
+5. Add arguments parsing - fib 1 2 3 4 5 fib_recursive 4 5 6 7 8
+6. save cache for the next run - serialize/deserialize
+
 Creat solution pull request.

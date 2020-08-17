@@ -55,7 +55,9 @@ def fibonacci_recursive(n: int) -> int:
 # fibonacci O(2^n)
 
 if __name__ == '__main__':
+    # patikrini ar yra cache - jei yra uzloudini, jeigu ne pradedii nauja
     start = time()
-    print(fibonacci_recursive(44))
+    print(fibonacci_recursive(200))
     print(time() - start)
     print(cache)
+    # issaugai cache
