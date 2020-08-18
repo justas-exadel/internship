@@ -1,9 +1,35 @@
+import json
 from time import time
 from functools import wraps
 import sys
 
 cache_set = {}
 
+
+def save_cache(data=cache_set):
+    try:
+       with open('cache_set.json', 'r+') as file:
+           cache_data = json.load(file)
+           # print(str(cache_data))
+           key_hist = []
+           for item in cache_data.keys():
+              key_hist.append(item)
+           print(key_hist)
+           for k, v in data.items():
+               if k not in key_hist:
+                cache_data.update({k: v})
+               else:
+                   pass
+           # print(str(cache_data))
+           file.seek(0)
+           print("ss")
+           json.dump(cache_data, file, indent=2)
+    except Exception:
+        with open('cache_set.json', 'w') as file:
+            json.dump(data, file, indent=2, sort_keys=True)
+
+def open_cache():
+    ...
 
 def result(result_value, function_name, time_start, iteration_number):
     duration = '{:06.3f}'.format(time() - time_start)
@@ -62,14 +88,16 @@ def fibonacci_recursive(n: int) -> int:
 
         return result(fibonacci_func(n), fibonacci_recursive.__name__,
                       time_start, iteration_number)
+
     except Exception:
         pass
-
+    finally:
+        save_cache()
 
 print("recursion maximum depth: ", sys.getrecursionlimit())
 
 
 if __name__ == '__main__':
-    fibonacci_iterative(35)
-    fibonacci_recursive(35)
+    # fibonacci_iterative(35)
+    fibonacci_recursive(7)
 
