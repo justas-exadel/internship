@@ -24,30 +24,48 @@ def save_cache(data):
             json.dump(data, file, indent=2, sort_keys=True)
 
 
+def load_cache():
+    try:
+        with open('cache_set.json', 'r') as file:
+            cache = json.load(file)
+    except FileNotFoundError:
+        pass
+
+
 def validate_input(n):
     if not isinstance(n, int):
-        print("Value must be integer.")
+        print(f"Value '{n}' must be integer.")
         exit()
     elif n < 0:
-        print("Integer must be greater than or equal to 0")
+        print(f"Integer {n} must be greater than or equal to 0")
         exit()
 
 
-def result(func):
+def myFun(*argv):
+    for arg in argv:
+        print(arg)
+
+
+def timer(func):
     @wraps(func)
-    def wrap(args):
+    def wrap(*args):
         start_time = time()
-        result = func(args)
+        result = func(*args)
         end_time = time()
         duration = '{:06.3f}'.format(end_time - start_time)
         print(
-            f'{func.__name__}({args}) = {result}, duration {duration} seconds')
+            f'{func.__name__}({args[0]}) = {result}, duration {duration} seconds')
         return result
 
     return wrap
 
 
-@result
+def fibonacci_iter(*args):
+    for arg in args:
+        fibonacci_iterative(arg)
+
+
+@timer
 def fibonacci_iterative(n: int) -> int:
     validate_input(n)
     list = []
@@ -61,10 +79,12 @@ def fibonacci_iterative(n: int) -> int:
     return value
 
 
-cache = {}
+def fibonacci_rec(*args):
+    for arg in args:
+        fibonacci_recursive(arg)
 
 
-@result
+@timer
 def fibonacci_recursive(n: int) -> int:
     validate_input(n)
 
@@ -78,7 +98,6 @@ def fibonacci_recursive(n: int) -> int:
             else:
                 value = fibonacci_func(n - 1) + fibonacci_func(n - 2)
                 cache[n] = value
-                save_cache(cache)
 
                 return value
 
@@ -88,5 +107,8 @@ def fibonacci_recursive(n: int) -> int:
 print("recursion maximum depth: ", sys.getrecursionlimit())
 
 if __name__ == '__main__':
-    fibonacci_iterative(35)
-    fibonacci_recursive(35)
+    cache = {}
+    load_cache()
+    fibonacci_iter(7, 4, 6)
+    fibonacci_rec(7, 4, 6)
+    save_cache(cache)
