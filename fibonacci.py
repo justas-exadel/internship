@@ -41,11 +41,6 @@ def validate_input(n):
         exit()
 
 
-def myFun(*argv):
-    for arg in argv:
-        print(arg)
-
-
 def timer(func):
     @wraps(func)
     def wrap(*args):
