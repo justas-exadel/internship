@@ -73,12 +73,12 @@ def fibonacci_recursive(n: int) -> int:
 if __name__ == '__main__':
     cache = load_cache()
 
-    input_values = [45, 35, '23', 0, 26]
+    input_values = [15, '45', 35]
     for i in input_values:
         if isinstance(i, int) and i >= 0:
             fibonacci_iterative(i)
             fibonacci_recursive(i)
         else:
-            pass
+            print(f"The value '{i}' must be integer greater or equal to 0.")
     save_cache(cache)
     print("recursion maximum depth: ", sys.getrecursionlimit())
