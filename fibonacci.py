@@ -3,6 +3,24 @@ from time import time
 import sys
 
 
+class FibonacciError(Exception):
+    def __init__(self, description):
+        self.description = description
+
+    def __str__(self):
+        return self.description
+
+
+class FibonacciBadArgumentError(FibonacciError):
+    def __init__(self):
+        super().__init__('Argument has to be integer.')
+
+
+class FibonacciBadIntegerError(FibonacciError):
+    def __init__(self):
+        super().__init__('Integer has to be greater or equal to zero.')
+
+
 def load_cache() -> dict:
     try:
         with open('cache_set.json', 'r') as file:
@@ -42,8 +60,16 @@ def timer(f):
     return wrap
 
 
+def validate_input(input):
+    if not isinstance(input, int):
+        raise FibonacciBadArgumentError
+    elif input < 0:
+        raise FibonacciBadIntegerError
+
+
 @timer
 def fibonacci_iterative(n: int) -> int:
+    validate_input(n)
     value_list = []
     if n == 0 or n == 1:
         return n
@@ -58,6 +84,7 @@ def fibonacci_iterative(n: int) -> int:
 
 @timer
 def fibonacci_recursive(n: int) -> int:
+    validate_input(n)
     if n == 0 or n == 1:
         return n
     else:
@@ -73,12 +100,12 @@ def fibonacci_recursive(n: int) -> int:
 if __name__ == '__main__':
     cache = load_cache()
 
-    input_values = [15, '45', 35]
+    input_values = [*range(0, 50, 5)]
     for i in input_values:
-        if isinstance(i, int) and i >= 0:
-            fibonacci_iterative(i)
-            fibonacci_recursive(i)
-        else:
-            print(f"The value '{i}' must be integer greater or equal to 0.")
+        print(i)
+        fibonacci_iterative(i)
+        fibonacci_recursive(i)
+    else:
+        pass
     save_cache(cache)
     print("recursion maximum depth: ", sys.getrecursionlimit())
