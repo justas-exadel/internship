@@ -4,40 +4,27 @@ from functools import wraps
 import sys
 
 
-def save_cache(data):
-    try:
-        with open('cache_set.json', 'r+') as file:
-            cache_data = json.load(file)
-            key_list = []
-        for item in cache_data:
-            key_list.append(item)
-
-        for key, value in data.items():
-            for i in key_list:
-                if i not in key_list:
-                    cache_data.update({"i": value})
-                else:
-                    pass
-        json.dump(cache_data, file, indent=2)
-    except (FileNotFoundError, ValueError):
-        with open('cache_set.json', 'w') as file:
-            json.dump(data, file, indent=2, sort_keys=True)
-
-
-def load_cache():
+def load_cache() -> dict:
     try:
         with open('cache_set.json', 'r') as file:
             cache = json.load(file)
+        return cache
     except FileNotFoundError:
-        pass
+        print('Cache file not found. Creating new cache.')
+        return {}
 
 
-def validate_input(n):
-    if not isinstance(n, int):
-        print(f"Value '{n}' must be integer.")
+def save_cache(cache: dict) -> None:
+    with open('cache_set.json', 'w') as f:
+        json.dump(cache, f)
+
+
+def validate_input(input):
+    if not isinstance(input, int):
+        print(f"Input value must be integer.")
         exit()
-    elif n < 0:
-        print(f"Integer {n} must be greater than or equal to 0")
+    elif input < 0:
+        print(f"Input value must be greater than or equal to 0")
         exit()
 
 
@@ -48,62 +35,82 @@ def timer(func):
         result = func(*args)
         end_time = time()
         duration = '{:06.3f}'.format(end_time - start_time)
-        print(
-            f'{func.__name__}({args[0]}) = {result}, duration {duration} seconds')
+        print(f'{func.__name__}({args[0]}) = {result}, duration {duration} seconds')
         return result
 
     return wrap
 
 
-def fibonacci_iter(*args):
-    for arg in args:
-        fibonacci_iterative(arg)
+def profile(f):
+    is_evaluating = False
+
+    def g(x):
+        nonlocal is_evaluating
+        if is_evaluating:
+            return f(x)
+        else:
+            start_time = time()
+            is_evaluating = True
+            try:
+                value = f(x)
+            finally:
+                is_evaluating = False
+            end_time = time()
+            print('time taken: {time}'.format(time=end_time - start_time))
+            return value
+
+    return g
 
 
-@timer
+@profile
 def fibonacci_iterative(n: int) -> int:
     validate_input(n)
-    list = []
+    value_list = []
     if n == 0 or n == 1:
         return n
-    a, b = 0, 1
-    for i in range(n):
-        list.append(a)
-        a, b = b, a + b
-    value = list[-1] + list[-2]
-    return value
+    else:
+        a, b = 0, 1
+        for i in range(n):
+            value_list.append(a)
+            a, b = b, a + b
+        value = value_list[-1] + value_list[-2]
+        return value
 
 
-def fibonacci_rec(*args):
-    for arg in args:
-        fibonacci_recursive(arg)
+@profile
+def fibonacci_recursive_no_cache(n: int) -> int:
+    validate_input(n)
+    if n == 0 or n == 1:
+        return n
+    else:
+        return fibonacci_recursive_no_cache(n - 1) + fibonacci_recursive_no_cache(n - 2)
 
 
-@timer
+@profile
 def fibonacci_recursive(n: int) -> int:
     validate_input(n)
-
-    def fibonacci_func(n):
-        if n <= 1:
-            return n
+    if n == 0 or n == 1:
+        return n
+    else:
+        cache_value = cache.get(n)
+        if cache_value is not None:
+            return cache_value
         else:
-            cache_value = cache.get(n)
-            if cache_value is not None:
-                return cache_value
-            else:
-                value = fibonacci_func(n - 1) + fibonacci_func(n - 2)
-                cache[n] = value
+            value = fibonacci_recursive(n - 1) + fibonacci_recursive(n - 2)
+            cache[n] = value
+            return value
 
-                return value
-
-    return fibonacci_func(n)
-
-
-print("recursion maximum depth: ", sys.getrecursionlimit())
 
 if __name__ == '__main__':
-    cache = {}
-    load_cache()
-    fibonacci_iter(7, 4, 6)
-    fibonacci_rec(7, 4, 6)
+    cache = load_cache()
+
+    input_values = [0, 1, 2, 3, 4, 5, 10, 33]
+    for i in input_values:
+        fibonacci_iterative(i)
+    for i in input_values:
+        fibonacci_recursive(i)
+    for i in input_values:
+        fibonacci_recursive_no_cache(i)
+
     save_cache(cache)
+    print("recursion maximum depth: ", sys.getrecursionlimit())
