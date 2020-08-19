@@ -105,7 +105,6 @@ if __name__ == '__main__':
         print(i)
         fibonacci_iterative(i)
         fibonacci_recursive(i)
-    else:
-        pass
+
     save_cache(cache)
     print("recursion maximum depth: ", sys.getrecursionlimit())
