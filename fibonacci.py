@@ -100,8 +100,8 @@ def fibonacci_recursive(n: int) -> int:
 
 def parser(command_line=None):
     parser = argparse.ArgumentParser('Run fibonacci function.')
-    parser.add_argument('-fib', '--fib', nargs='+', type=int, help='integers for fibonacci iterative function')
-    parser.add_argument('-fib_rec', '--fib_recursive', nargs='+', type=int,  help='integers for fibonacci recursive function')
+    parser.add_argument('-fib',  nargs='+', type=int, help='integers for fibonacci iterative function')
+    parser.add_argument('-fib_recursive', nargs='+', type=int,  help='integers for fibonacci recursive function')
     args = parser.parse_args()
 
     if(args.fib):
