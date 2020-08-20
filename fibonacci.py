@@ -100,26 +100,17 @@ def fibonacci_recursive(n: int) -> int:
 
 def parser(command_line=None):
     parser = argparse.ArgumentParser('Run fibonacci function.')
+    parser.add_argument('-fib', '--fib', nargs='+', type=int, help='integers for fibonacci iterative function')
+    parser.add_argument('-fib_rec', '--fib_recursive', nargs='+', type=int,  help='integers for fibonacci recursive function')
+    args = parser.parse_args()
 
-    subprasers = parser.add_subparsers(dest='command')
-    fib = subprasers.add_parser('fib', help='integers for fibonacci iterative function')
+    if(args.fib):
+        for i in args.fib:
+            fibonacci_iterative(i)
 
-    fib.add_argument('arguments', type=int, help='arguments for fibonacci iterative function')
-
-    fib_recursive  = subprasers.add_parser('fib_recursive', help='integers for fibonacci recursive function')
-    fib_recursive .add_argument('arguments', type=int, default=0, help='arguments for ibonacci recursive function')
-
-    args = parser.parse_args(command_line)
-
-
-    if args.command == 'fib':
-
-        a = args.arguments
-        fibonacci_iterative(a)
-
-    elif args.command == 'fib_recursive':
-        a = args.arguments
-        fibonacci_recursive(a)
+    if(args.fib_recursive):
+        for i in args.fib_recursive:
+            fibonacci_recursive(i)
 
 
 if __name__ == '__main__':
