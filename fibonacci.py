@@ -61,12 +61,6 @@ def timer(f):
 
     return wrap
 
-def validate_input(input):
-    if not isinstance(input, int):
-        raise FibonacciBadArgumentError
-    elif input < 0:
-        raise FibonacciBadIntegerError
-
         
 def validate_input(input):
     if not isinstance(input, int):
