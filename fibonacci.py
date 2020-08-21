@@ -1,6 +1,7 @@
 import json
 from time import time
 import sys
+import argparse
 
 
 class FibonacciError(Exception):
@@ -97,14 +98,23 @@ def fibonacci_recursive(n: int) -> int:
             return value
 
 
+def parser():
+    parser = argparse.ArgumentParser('Run fibonacci function.')
+    parser.add_argument('-fib', nargs='+', type=int, help='integers for fibonacci iterative function')
+    parser.add_argument('-fib_recursive', nargs='+', type=int, help='integers for fibonacci recursive function')
+    args = parser.parse_args()
+
+    if (args.fib):
+        for i in args.fib:
+            fibonacci_iterative(i)
+
+    if (args.fib_recursive):
+        for i in args.fib_recursive:
+            fibonacci_recursive(i)
+    save_cache(cache)
+
+
 if __name__ == '__main__':
     cache = load_cache()
-
-    input_values = [*range(0, 50, 5)]
-    for i in input_values:
-        print(i)
-        fibonacci_iterative(i)
-        fibonacci_recursive(i)
-
-    save_cache(cache)
+    parser()
     print("recursion maximum depth: ", sys.getrecursionlimit())
