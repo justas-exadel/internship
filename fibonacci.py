@@ -23,12 +23,10 @@ class FibonacciBadIntegerError(FibonacciError):
     def __init__(self):
         super().__init__('Integer has to be greater or equal to zero.')
 
-
 def load_cache():
     file_path = pathlib.Path("cache_set.txt")
     if not file_path.exists():
         file_path.write_bytes(os.urandom(1024 ** 3))
-
 
 def timer(f):
     is_evaluating = False
@@ -50,7 +48,7 @@ def timer(f):
             print(
                 f'{f.__name__}({x}) = {result}, duration {duration} seconds')
             return value
-
+          
     return wrap
 
 
@@ -104,7 +102,7 @@ def parser(command_line=None):
         for i in args.fib_recursive:
             fibonacci_recursive(i)
 
-
+            
 if __name__ == '__main__':
     cache = load_cache()
 
