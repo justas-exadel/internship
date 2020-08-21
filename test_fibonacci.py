@@ -3,54 +3,41 @@ import pytest
 import os.path
 
 
-@pytest.fixture
-def fibonacci_arguments():
-    a = 10
-    b = 0
-    c = "24"
-    d = -5
-    return [a, b, c, d]
+def test_fibonacci_iterative_int():
+    assert fb.fibonacci_iterative(10) == 55
 
 
-def test_fibonacci_iterative_int(fibonacci_arguments):
-    result = 55
-    assert fb.fibonacci_iterative(fibonacci_arguments[0]) == result
+def test_fibonacci_iterative_zero():
+    assert fb.fibonacci_iterative(0) == 0
 
 
-def test_fibonacci_iterative_zero(fibonacci_arguments):
-    result = 0
-    assert fb.fibonacci_iterative(fibonacci_arguments[1]) == result
-
-
-def test_fibonacci_iterative_str(fibonacci_arguments):
+def test_fibonacci_iterative_str():
     with pytest.raises(fb.FibonacciBadArgumentError):
-        fb.fibonacci_iterative(fibonacci_arguments[2])
+        fb.fibonacci_iterative("24")
 
 
-def test_fibonacci_iterative_negative(fibonacci_arguments):
+def test_fibonacci_iterative_negative():
     with pytest.raises(fb.FibonacciBadIntegerError):
-        fb.fibonacci_iterative(fibonacci_arguments[3])
+        fb.fibonacci_iterative(-5)
 
 
-def test_fibonacci_recursive_int(fibonacci_arguments):
+def test_fibonacci_recursive_int():
     fb.cache = fb.load_cache()
-    result = 55
-    assert fb.fibonacci_recursive(fibonacci_arguments[0]) == result
+    assert fb.fibonacci_recursive(10) == 55
 
 
-def test_fibonacci_recursive_zero(fibonacci_arguments):
-    result = 0
-    assert fb.fibonacci_recursive(fibonacci_arguments[1]) == result
+def test_fibonacci_recursive_zero():
+    assert fb.fibonacci_recursive(0) == 0
 
 
-def test_fibonacci_recursive_str(fibonacci_arguments):
+def test_fibonacci_recursive_str():
     with pytest.raises(fb.FibonacciBadArgumentError):
-        fb.fibonacci_recursive(fibonacci_arguments[2])
+        fb.fibonacci_recursive("24")
 
 
-def test_fibonacci_recursive_negative(fibonacci_arguments):
+def test_fibonacci_recursive_negative():
     with pytest.raises(fb.FibonacciBadIntegerError):
-        fb.fibonacci_recursive(fibonacci_arguments[3])
+        fb.fibonacci_recursive(-5)
 
 
 def test_load_cache():
