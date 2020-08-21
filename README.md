@@ -1,4 +1,5 @@
 # internship
+## First task
 
 Write a script that calculates n-th fibonnaci number. The script has to contain two functions
   1. One function calculates Fibonnaci number using iterative algorithm
@@ -15,3 +16,14 @@ Requirements
 
 
 Creat solution pull request.
+
+## Second task
+
+Splits long message to multiple messages in order to fit within an arbitrary message length limit (useful for SMS, Twitter, etc.).
+
+```
+import msgsplitter
+result = msgsplitter.split("Hello, this is a really long message.", length_limit=30)
+print(result)
+['Hello, this is a really (1/2)', 'long message. (2/2)']
+```
