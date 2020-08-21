@@ -22,7 +22,6 @@ class FibonacciBadIntegerError(FibonacciError):
     def __init__(self):
         super().__init__('Integer has to be greater or equal to zero.')
 
-
 def load_cache():
     try:
         with open("cache_set.pkl", "rb") as f:
@@ -34,7 +33,6 @@ def load_cache():
 def save_cache(cache):
     with open('cache_set.pkl', 'wb') as f:
         pickle.dump(cache, f)
-
 
 def timer(f):
     is_evaluating = False
@@ -56,7 +54,7 @@ def timer(f):
             print(
                 f'{f.__name__}({x}) = {result}, duration {duration} seconds')
             return value
-
+          
     return wrap
 
 
@@ -124,7 +122,7 @@ def parser(command_line=None):
         for i in args.fib_recursive:
             fibonacci_recursive(i)
 
-
+            
 if __name__ == '__main__':
     parser()
     input_values = [30, 45, 55]
