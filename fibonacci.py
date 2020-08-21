@@ -100,7 +100,7 @@ def fibonacci_recursive(n: int) -> int:
 if __name__ == '__main__':
     cache = load_cache()
 
-    input_values = [*range(0, 20, 5)]
+    input_values = [*range(0, 50, 5)]
     for i in input_values:
         print(i)
         fibonacci_iterative(i)
@@ -108,3 +108,4 @@ if __name__ == '__main__':
 
     save_cache(cache)
     print("recursion maximum depth: ", sys.getrecursionlimit())
+
