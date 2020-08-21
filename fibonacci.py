@@ -1,6 +1,5 @@
 import functools
-import os
-import pathlib
+import pickle
 from time import time
 import argparse
 import sys
@@ -25,9 +24,16 @@ class FibonacciBadIntegerError(FibonacciError):
 
 
 def load_cache():
-    file_path = pathlib.Path("cache_set.txt")
-    if not file_path.exists():
-        file_path.write_bytes(os.urandom(1024 ** 3))
+    try:
+        with open("cache_set.pkl", "rb") as f:
+            return pickle.load(f)
+    except FileNotFoundError:
+        return {}
+
+
+def save_cache(cache):
+    with open('cache_set.pkl', 'wb') as f:
+        pickle.dump(cache, f)
 
 
 def timer(f):
@@ -62,7 +68,6 @@ def validate_input(input):
 
 
 @timer
-@functools.lru_cache
 def fibonacci_iterative(n: int) -> int:
     validate_input(n)
     value_list = []
@@ -77,8 +82,23 @@ def fibonacci_iterative(n: int) -> int:
         return value
 
 
+def cached(func):
+    func.cache = load_cache()
+    @functools.wraps(func)
+    def wrapper(*args):
+        try:
+            return func.cache[args]
+        except KeyError:
+            func.cache[args] = result = func(*args)
+            save_cache(func.cache)
+            return result
+
+    return wrapper
+
+
+
 @timer
-@functools.lru_cache
+@cached
 def fibonacci_recursive(n: int) -> int:
     validate_input(n)
     if n == 0 or n == 1:
@@ -106,13 +126,9 @@ def parser(command_line=None):
 
 
 if __name__ == '__main__':
-    cache = load_cache()
-
     parser()
-
-    input_values = [10, 35]
+    input_values = [30, 45, 55]
     for i in input_values:
         fibonacci_iterative(i)
         fibonacci_recursive(i)
-
     print("recursion maximum depth: ", sys.getrecursionlimit())
