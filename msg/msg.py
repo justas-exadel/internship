@@ -1,7 +1,7 @@
 import math
 import re
 
-def clean_string(text_list):
+def clean_string(text_list: list) -> list:
     final_text = []
     length = len(text_list)
     n = 1
@@ -10,48 +10,54 @@ def clean_string(text_list):
         n = n + 1
     return final_text
 
-def fitted_text(text, max_length=30):
+def fitted_text(text: str, max_length=30) -> list:
     text_chars = len(text)
     add_space = math.ceil((text_chars/max_length*5+text_chars)/max_length)
     tail = 5 + 2 * (len(str(add_space))-1)
-    a = 0
-    c = 0
-    best_string = []
+    optimal_length = max_length - tail - 5
+    start = 0
+    end = 0
+    clean_strings = []
     bad_words = []
-    optiman_length = max_length - tail - 5
-    for i in range(0, len(text), optiman_length):
+    for i in range(0, len(text), optimal_length):
         fixing_text = []
-        c += optiman_length
-        d = text[a:c]
-        fixing_text.append(d)
-        a += optiman_length
+        end += optimal_length
+        string = text[start:end]
+        fixing_text.append(string)
+        start += optimal_length
         clean_text = re.compile(r'.+\s')
+
         try:
             if bad_words:
                 full_word = bad_words[0] + fixing_text[0]
                 fixing_text[0] = full_word
                 bad_words = []
             res = clean_text.search(fixing_text[0])
-            f = res.group()
-            g = f"{f}"
-            best_string.append(g)
-            y = fixing_text[0].replace(g, "")
-            fixing_text[0] = y
+            result = res.group()
+
+            if result[-1] == " ":
+                result = result[:-1]
+                clean = f"{result} "
+
+            clean_strings.append(clean)
+            muted_text = fixing_text[0].replace(clean, "")
+            fixing_text[0] = muted_text
             bad_words.append(fixing_text[0])
+
         except AttributeError:
-            best_string.append(fixing_text[0])
+            clean_strings.append(fixing_text[0])
 
     if bad_words:
-        best_string.append(f'{bad_words[0]} ')
-    if len(best_string[-1]) + len(best_string[-2]) <= optiman_length:
-        best_string[-2] = best_string[-2] + best_string[-1]
-        best_string.pop()
-    text_fixed = clean_string(best_string)
+        clean_strings.append(f'{bad_words[0]} ')
+    if len(clean_strings[-1]) + len(clean_strings[-2]) <= optimal_length:
+        clean_strings[-2] = clean_strings[-2] + clean_strings[-1]
+        clean_strings.pop()
+    text_fixed = clean_string(clean_strings)
     return text_fixed
 
 
 if __name__ == '__main__':
-    print(fitted_text('Planet’s SkySats deployedsequentiallyabout 12 and a half minutes after liftoff, and the Starlink satellites deployed approximately 46 minutes after liftoff.', 35))
 
+    print(fitted_text('Splits long message to multiple messages in order to fit within an arbitrary message length limit (useful for SMS, Twitter, etc.).', 22))
 
 
