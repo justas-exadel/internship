@@ -3,6 +3,7 @@ import pickle
 from time import time
 import argparse
 import sys
+import argparse
 
 
 class FibonacciError(Exception):
@@ -106,15 +107,13 @@ def fibonacci_recursive(n: int) -> int:
         return value
 
 
-def parser(command_line=None):
+def parser():
     parser = argparse.ArgumentParser('Run fibonacci function.')
-    parser.add_argument('-fib', nargs='+', type=int,
-                        help='integers for fibonacci iterative function')
-    parser.add_argument('-fib_recursive', nargs='+', type=int,
-                        help='integers for fibonacci recursive function')
+    parser.add_argument('-fib', nargs='+', type=int, help='integers for fibonacci iterative function')
+    parser.add_argument('-fib_recursive', nargs='+', type=int, help='integers for fibonacci recursive function')
     args = parser.parse_args()
 
-    if (args.fib):
+    if args.fib:
         for i in args.fib:
             fibonacci_iterative(i)
 
@@ -122,11 +121,13 @@ def parser(command_line=None):
         for i in args.fib_recursive:
             fibonacci_recursive(i)
 
-            
+
 if __name__ == '__main__':
     parser()
     input_values = [30, 45, 55]
     for i in input_values:
         fibonacci_iterative(i)
         fibonacci_recursive(i)
+
     print("recursion maximum depth: ", sys.getrecursionlimit())
+
