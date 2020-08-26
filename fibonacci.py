@@ -22,6 +22,7 @@ class FibonacciBadIntegerError(FibonacciError):
     def __init__(self):
         super().__init__('Integer has to be greater or equal to zero.')
 
+
 def load_cache():
     try:
         with open("cache_set.pkl", "rb") as f:
@@ -33,6 +34,7 @@ def load_cache():
 def save_cache(cache):
     with open('cache_set.pkl', 'wb') as f:
         pickle.dump(cache, f)
+
 
 def timer(f):
     is_evaluating = False
@@ -54,7 +56,7 @@ def timer(f):
             print(
                 f'{f.__name__}({x}) = {result}, duration {duration} seconds')
             return value
-          
+
     return wrap
 
 
@@ -82,6 +84,7 @@ def fibonacci_iterative(n: int) -> int:
 
 def cached(func):
     func.cache = load_cache()
+
     @functools.wraps(func)
     def wrapper(*args):
         try:
@@ -92,7 +95,6 @@ def cached(func):
             return result
 
     return wrapper
-
 
 
 @timer
@@ -106,7 +108,7 @@ def fibonacci_recursive(n: int) -> int:
         return value
 
 
-def parser(command_line=None):
+def parser():
     parser = argparse.ArgumentParser('Run fibonacci function.')
     parser.add_argument('-fib', nargs='+', type=int,
                         help='integers for fibonacci iterative function')
@@ -114,15 +116,15 @@ def parser(command_line=None):
                         help='integers for fibonacci recursive function')
     args = parser.parse_args()
 
-    if (args.fib):
+    if args.fib:
         for i in args.fib:
             fibonacci_iterative(i)
 
-    if (args.fib_recursive):
+    if args.fib_recursive:
         for i in args.fib_recursive:
             fibonacci_recursive(i)
 
-            
+
 if __name__ == '__main__':
     parser()
     input_values = [30, 45, 55]
