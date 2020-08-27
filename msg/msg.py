@@ -9,6 +9,13 @@ class Message_Splitter:
         self.max_length = max_length
 
     def format_msg(self):
+        def check_max_len(len):
+            if len < 8:
+                print(
+                    "Maximum length is too low, please choose the bigger one.")
+                exit()
+
+        check_max_len(self.max_length)
         text_chars = len(self.text)
         msg_count = math.ceil(text_chars / self.max_length)
         msg_count_with_tail = math.ceil(
@@ -81,9 +88,7 @@ class Message_Splitter:
                         index_item + 1] = f'{result} {text_list[index_item + 1]}'.strip()  # insert into text_list additional word
                     text_list[index_item] = text_list[
                         index_item].replace(result, "").strip()
-                    final_text[-1] = final_text[-1].replace(result,
-                                                            "").replace(
-                        "  ", " ")
+                    final_text[-1] = final_text[-1].replace(result, "").replace("  ", " ")
 
                 def split_word():
                     # doesn't fit one long word
@@ -100,7 +105,6 @@ class Message_Splitter:
                         text_list.append(
                             f'{text_list[index_item][len(splitted_word):]}')  # insert into text_list additional word
                     text_list[index_item] = splitted_word
-
 
                 if len(final_text[-1]) <= max_length:
 
@@ -135,7 +139,7 @@ class Message_Splitter:
 
         return add_tail(good_text, max_length=self.max_length)
 
+
 if __name__ == '__main__':
     print(Message_Splitter(
-        "Splits long message to multiple messages in order to fit within an arbitrary message length limit (useful for SMS, Twitter, etc.).",
-        20).format_msg())
+        "Splits long message to multiple messages in order to fit within an arbitrary message length limit (useful for SMS, Twitter, etc.)..", 35).format_msg())
