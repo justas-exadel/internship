@@ -62,7 +62,6 @@ class Message_Splitter:
                 length = len(text_list)
             n = 1
             for item in text_list:
-
                 index_item = text_list.index(item)
 
                 final_text.append(f"{item} ({n}/{length})")
@@ -82,6 +81,7 @@ class Message_Splitter:
                                 index_item + 1].replace(
                                 text_list[index_item + 1],
                                 "").strip()  # delete inserted word from text_list
+
                             if text_list[
                                 index_item + 1] == "":  # if text_list item is empty after deleting - item popped
                                 text_list.pop(index_item + 1)
@@ -104,17 +104,21 @@ class Message_Splitter:
                 elif len(final_text[-1]) > max_length:
                     # doesn't fit one long word
                     words_list = final_text[-1].split()
+
                     tail_len = len(words_list[-1])
                     cut_word_edge = max_length - tail_len - 1
-                    splitted_word = words_list[0][:cut_word_edge]
+
+                    splitted_word = text_list[index_item][:cut_word_edge]
+
                     final_text[-1] = " ".join([splitted_word, words_list[-1]])
 
                     try:
                         text_list[
-                            index_item + 1] = f'{words_list[0][cut_word_edge:]} {text_list[index_item + 1]}'.strip()  # insert into text_list additional word before tail
+                            index_item + 1] = f'{text_list[index_item][len(splitted_word):]} {text_list[index_item + 1]}'.strip()  # insert into text_list additional word
                     except IndexError:
                         text_list.append(
-                            f'{words_list[0][cut_word_edge:]}')  # insert into text_list additional word before tail
+                            f'{text_list[index_item][len(splitted_word):]}')  # insert into text_list additional word
+                    text_list[index_item] = splitted_word
 
             return chck_max_msg(final_text)
 
@@ -123,5 +127,5 @@ class Message_Splitter:
 
 if __name__ == '__main__':
     print(Message_Splitter(
-        "Split multiple messages in order to fit within an arbitrary message length limit (useful for SMS, Twitter, etc.)..",
-        35).format_msg())
+        "Splits long message to multiple messages in order to fit within an arbitrary message length limit (useful for SMS, Twitter, etc.).",
+        25).format_msg())
