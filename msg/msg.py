@@ -57,75 +57,85 @@ class Message_Splitter:
                     return new_list
                 return final_text
 
-            final_text = []
-            if length == None:
-                length = len(text_list)
-            n = 1
-            for item in text_list:
-                index_item = text_list.index(item)
+            def check_msg_len(final_text):
 
-                final_text.append(f"{item} ({n}/{length})")
-                n = n + 1
+                def add_word_to_final_text():
+                    split_msg = final_text[-1].split()
+                    split_msg.insert(-1, text_list[index_item + 1])
+                    final_text[-1] = " ".join(
+                        split_msg)  # insert additional word into final_text list
+                    text_list[index_item + 1] = text_list[
+                        index_item + 1].replace(
+                        text_list[index_item + 1],
+                        "").strip()  # delete inserted word from text_list
 
-                if len(final_text[-1]) <= max_length:
-                    if index_item + 1 <= text_list.index(text_list[-1]):
-                        # try to add next element and check if does it fit
+                def add_word_to_text_list():
+                    # if next word from next message fits - fixing text_list
+                    string_parts = final_text[-1].split()
+                    result = string_parts[-2]  # before tail
 
-                        if len(
-                                f'{final_text[-1]} {text_list[index_item + 1]}') <= max_length:
-                            split_msg = final_text[-1].split()
-                            split_msg.insert(-1, text_list[index_item + 1])
-                            final_text[-1] = " ".join(
-                                split_msg)  # insert additional word into final_text list
-                            text_list[index_item + 1] = text_list[
-                                index_item + 1].replace(
-                                text_list[index_item + 1],
-                                "").strip()  # delete inserted word from text_list
+                    if text_list[index_item] == text_list[-1]:
+                        text_list.append("")
 
-                            if text_list[
-                                index_item + 1] == "":  # if text_list item is empty after deleting - item popped
-                                text_list.pop(index_item + 1)
+                    text_list[
+                        index_item + 1] = f'{result} {text_list[index_item + 1]}'.strip()  # insert into text_list additional word
+                    text_list[index_item] = text_list[
+                        index_item].replace(result, "").strip()
+                    final_text[-1] = final_text[-1].replace(result,
+                                                            "").replace(
+                        "  ", " ")
 
-                            # if next word from next message fits - fixing text_list
-                            string_parts = final_text[-1].split()
-                            result = string_parts[-2]  # before tail
-
-                            if text_list[index_item] == text_list[-1]:
-                                text_list.append("")
-
-                            text_list[
-                                index_item + 1] = f'{result} {text_list[index_item + 1]}'.strip()  # insert into text_list additional word before tail
-                            text_list[index_item] = text_list[
-                                index_item].replace(result, "").strip()
-                            final_text[-1] = final_text[-1].replace(result,
-                                                                    "").replace(
-                                "  ", " ")
-
-                elif len(final_text[-1]) > max_length:
+                def split_word():
                     # doesn't fit one long word
                     words_list = final_text[-1].split()
-
                     tail_len = len(words_list[-1])
                     cut_word_edge = max_length - tail_len - 1
-
                     splitted_word = text_list[index_item][:cut_word_edge]
-
                     final_text[-1] = " ".join([splitted_word, words_list[-1]])
-
                     try:
                         text_list[
                             index_item + 1] = f'{text_list[index_item][len(splitted_word):]} {text_list[index_item + 1]}'.strip()  # insert into text_list additional word
+
                     except IndexError:
                         text_list.append(
                             f'{text_list[index_item][len(splitted_word):]}')  # insert into text_list additional word
                     text_list[index_item] = splitted_word
 
+
+                if len(final_text[-1]) <= max_length:
+
+                    if index_item + 1 <= text_list.index(
+                            text_list[-1]):  # if not last element of list
+                        # try to add next element and check if does it fit
+                        if len(
+                                f'{final_text[-1]} {text_list[index_item + 1]}') <= max_length:  # if length is enough try to add a word
+
+                            add_word_to_final_text()
+
+                            if text_list[
+                                index_item + 1] == "":  # if text_list item is empty after deleting - item popped
+                                text_list.pop(index_item + 1)
+                            add_word_to_text_list()
+
+                elif len(final_text[-1]) > max_length:
+                    split_word()
+
+            final_text = []
+            if length == None:
+                length = len(text_list)
+            n = 1
+
+            for item in text_list:
+                index_item = text_list.index(item)
+                final_text.append(f"{item} ({n}/{length})")
+                n = n + 1
+                check_msg_len(final_text)
+
             return chck_max_msg(final_text)
 
         return add_tail(good_text, max_length=self.max_length)
 
-
 if __name__ == '__main__':
     print(Message_Splitter(
         "Splits long message to multiple messages in order to fit within an arbitrary message length limit (useful for SMS, Twitter, etc.).",
-        25).format_msg())
+        20).format_msg())
