@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template
 import math
 import re
 from msg_flask.forms import Message_Form
