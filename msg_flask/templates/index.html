@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Message Formater</h1>
+<form method="POST" action="#">
+    {{form.hidden_tag()}}
+    <div class="form-group">
+        {{form.max_length.label(class="form-control-label")}}
+        {{form.max_length(class="form-control")}}
+        {%if form.max_length.errors%}
+        {%for error in form.max_length.errors%}
+        <small><font color="red">{{error}}</font></small>
+        {%endfor%}
+        {%endif%}
+    </div>
+    <div class="form-group">
+        {{form.text.label(class="form-control-label")}}
+        {{form.text}}
+        {%if form.text.errors%}
+        {%for error in form.text.errors%}
+        <small><font color="red">{{error}}</font></small>
+        {%endfor%}
+        {%endif%}
+    </div>
+    {{form.submit}}
+</form>
+{% endblock %}
