@@ -1,5 +1,7 @@
-import json
+import functools
+import pickle
 from time import time
+import argparse
 import sys
 import argparse
 
@@ -21,21 +23,17 @@ class FibonacciBadIntegerError(FibonacciError):
     def __init__(self):
         super().__init__('Integer has to be greater or equal to zero.')
 
-
-def load_cache() -> dict:
+def load_cache():
     try:
-        with open('cache_set.json', 'r') as file:
-            cache = json.load(file)
-        return cache
+        with open("cache_set.pkl", "rb") as f:
+            return pickle.load(f)
     except FileNotFoundError:
-        print('Cache file not found. Creating new cache.')
         return {}
 
 
-def save_cache(cache: dict) -> None:
-    with open('cache_set.json', 'w') as f:
-        json.dump(cache, f)
-
+def save_cache(cache):
+    with open('cache_set.pkl', 'wb') as f:
+        pickle.dump(cache, f)
 
 def timer(f):
     is_evaluating = False
@@ -57,7 +55,7 @@ def timer(f):
             print(
                 f'{f.__name__}({x}) = {result}, duration {duration} seconds')
             return value
-
+          
     return wrap
 
 
@@ -83,19 +81,30 @@ def fibonacci_iterative(n: int) -> int:
         return value
 
 
+def cached(func):
+    func.cache = load_cache()
+    @functools.wraps(func)
+    def wrapper(*args):
+        try:
+            return func.cache[args]
+        except KeyError:
+            func.cache[args] = result = func(*args)
+            save_cache(func.cache)
+            return result
+
+    return wrapper
+
+
+
 @timer
+@cached
 def fibonacci_recursive(n: int) -> int:
     validate_input(n)
     if n == 0 or n == 1:
         return n
     else:
-        cache_value = cache.get(n)
-        if cache_value is not None:
-            return cache_value
-        else:
-            value = fibonacci_recursive(n - 1) + fibonacci_recursive(n - 2)
-            cache[n] = value
-            return value
+        value = fibonacci_recursive(n - 1) + fibonacci_recursive(n - 2)
+        return value
 
 
 def parser():
@@ -104,18 +113,21 @@ def parser():
     parser.add_argument('-fib_recursive', nargs='+', type=int, help='integers for fibonacci recursive function')
     args = parser.parse_args()
 
-    if (args.fib):
+    if args.fib:
         for i in args.fib:
             fibonacci_iterative(i)
 
     if (args.fib_recursive):
         for i in args.fib_recursive:
             fibonacci_recursive(i)
-    save_cache(cache)
 
 
 if __name__ == '__main__':
-    cache = load_cache()
     parser()
+    input_values = [30, 45, 55]
+    for i in input_values:
+        fibonacci_iterative(i)
+        fibonacci_recursive(i)
+
     print("recursion maximum depth: ", sys.getrecursionlimit())
 
