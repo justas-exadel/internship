@@ -1,70 +1,69 @@
-import unittest
-from .car import Car
+import car
 
 
-class TestCars(unittest.TestCase):
-    def test_car_status_succsess(self):
-        test1 = Car('CCC-344')
-        self.assertEqual(test1.status, 'Successfully registered')
-        self.assertEqual(test1.car_number, 'CCC-344')
-        self.assertEqual(test1.registered_cars, ['CCC-344'])
-        self.assertEqual(test1.car_count, 1)
-
-    def test_car_number_valid(self):
-        test2 = Car('CC1-344')
-        self.assertEqual(test2.status, 'Not valid number')
-        self.assertEqual(test2.car_number, 'CC1-344')
-        self.assertEqual(test2.registered_cars,
-                         "There are no registered cars at this moment")
-        self.assertEqual(test2.car_count,
-                         "There are no registered cars at this moment")
-
-    def test_car_number_already_is(self):
-        test3 = Car('WWW-344')
-        test4 = Car('WWW-344')
-        self.assertEqual(test4.status, 'The car has already number assigned')
-        self.assertEqual(test3.car_number, 'WWW-344')
-        self.assertEqual(test3.registered_cars, ['WWW-344'])
-        self.assertEqual(test3.car_count, 1)
-
-    def test_car_number_already_is(self):
-        test3 = Car('WWW-344')
-        test4 = Car('WWW-344')
-        self.assertEqual(test3.status, 'Successfully registered')
-        self.assertEqual(test4.status,
-                         'The car has already number assigned')  # check it
-        self.assertEqual(test3.car_number, 'WWW-344')
-        self.assertEqual(test3.registered_cars, ['WWW-344'])
-        self.assertEqual(test3.car_count, 1)
-
-    def test_car_number_available(self):
-        test5 = Car('BBB-344')
-        self.assertEqual(test5.status, 'Successfully registered')
-        self.assertEqual(test5.car_number, 'BBB-344')
-        self.assertEqual(test5.registered_cars, ['BBB-344'])
-        self.assertEqual(test5.car_count, 1)
-        test5 = Car('BBc-344')
-        self.assertEqual(test5.status, 'Not valid number')
-        test5 = Car('BBB-344')
-        self.assertEqual(test5.status, 'The car has already number assigned')
-
-    def test_car_counts(self):  # need fixes
-        test6 = Car('AAA-344')
-        self.assertEqual(test6.car_count, 1)
-        test7 = Car('BBB-344')
-        self.assertEqual(test7.car_count, 2)
-        test8 = Car('CCC-344')
-        self.assertEqual(test8.car_count, 3)
-
-    def test_registred_car(self):  # need fixes
-        test9 = Car('AAA-344')
-        test10 = Car('BBB-344')
-        test11 = Car('CCC-344')
-        self.assertEqual(test9.registered_cars, ['AAA-344'])
-        self.assertEqual(test10.registered_cars, ['AAA-344', 'BBB-344'])
-        self.assertEqual(test11.registered_cars,
-                         ['AAA-344', 'BBB-344', 'CCC-344'])
+def test_car_number_add_1():
+    test1 = car.Car('TTT-111')
+    assert test1.car_number == 'TTT-111'
+    assert test1.status == 'Successfully registered'
+    assert test1.car_count == 1
+    assert test1.registered_cars == ['TTT-111']
 
 
-if __name__ == '__main__':
-    unittest.main()
+def test_car_number_add_2():
+    test2 = car.Car('TTT-333')
+    test3 = car.Car()
+    test3.car_number = 'TTT-222'
+    assert test3.car_number == 'TTT-222'
+    assert test3.status == 'Successfully registered'
+    assert test3.car_count == 3
+    assert test3.registered_cars == ['TTT-111', 'TTT-333', 'TTT-222']
+
+
+def test_car_number_add_3():
+    test4 = car.Car('TTT-444')
+    test5 = car.Car()
+    test5.car_number = 'TTT-555'
+    test5.car_number = 'TTT-565'
+    assert test5.car_number == 'TTT-555'
+    assert test5.status == 'The car has already number assigned'
+    assert test5.car_count == 5
+    assert test5.registered_cars == ['TTT-111', 'TTT-333', 'TTT-222',
+                                     'TTT-444', 'TTT-555']
+
+
+def test_car_number_add_4():
+    test6 = car.Car('TT5-11r')
+    assert test6.car_number == None
+    assert test6.status == 'Not valid number'
+    assert test6.car_count == 5
+    assert test6.registered_cars == ['TTT-111', 'TTT-333', 'TTT-222',
+                                     'TTT-444', 'TTT-555']
+
+
+def test_car_number_add_5():
+    test7 = car.Car()
+    test7.car_number = 'TT1-ee3'
+    assert test7.car_number == None
+    assert test7.status == 'Not valid number'
+    assert test7.car_count == 5
+    assert test7.registered_cars == ['TTT-111', 'TTT-333', 'TTT-222',
+                                     'TTT-444', 'TTT-555']
+
+
+def test_car_number_add_6():
+    test8 = car.Car('TTT-666')
+    test9 = car.Car('TTT-666')
+    assert test9.car_number == None
+    assert test9.status == 'Already registered number'
+    assert test9.car_count == 6
+    assert test9.registered_cars == ['TTT-111', 'TTT-333', 'TTT-222',
+                                     'TTT-444', 'TTT-555', 'TTT-666']
+
+
+def test_car_number_del():
+    test10 = car.Car()
+    test10.car_number = 'TTT-777'
+    del test10.car_number
+    assert test10.car_count == 6
+    assert test10.registered_cars == ['TTT-111', 'TTT-333', 'TTT-222',
+                                      'TTT-444', 'TTT-555', 'TTT-666']

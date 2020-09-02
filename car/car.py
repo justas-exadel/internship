@@ -1,64 +1,56 @@
 import re
-import inspect
-
-callers = []
-cars_list = []
 
 
 class Car:
-    caller = ""
-    count = 0
+    car_count = 0
+    registered_cars = []
 
-    def __init__(self, car_number):
-        call_name = str(inspect.stack()[1][4]).split()[0][2:]
-        self.caller = call_name
-        self.car_number = car_number
+    def __init__(self, car_number=None):
         self.status = self.car_status(car_number)
-        self.registered_cars = self.car_registred()
-        self.car_count = self.cars_count()  # gives bad count
+        self.car_number = car_number
 
-    def getInstanceName(self):
-        return self.caller
+    @property
+    def car_number(self):
+        try:
+            return self._car_number
+        except AttributeError:
+            return None
+
+    @car_number.setter
+    def car_number(self, number):
+        if number != None and self.car_number not in self.registered_cars:
+            x = self.car_status(number)
+            if x == 'Successfully registered':
+                self._car_number = number
+                Car.registered_cars.append(self._car_number)
+                Car.car_count += 1
+        else:
+            self.status = 'The car has already number assigned'
+
+    @car_number.deleter
+    def car_number(self):
+        if self.car_number:
+            Car.registered_cars.remove(self.car_number)
+            Car.car_count -= 1
 
     def car_status(self, number: str) -> str:
-        pattern = re.compile(r'[A-Z]{3}[-]\d{3}')
-        check_reg = pattern.search(number)
-        if not check_reg:
-            self.status = 'Not valid number'
-        elif self.caller in callers:
-            self.status = 'The car has already number assigned'
-        elif number in cars_list:
-            self.status = 'Already registered number'
-        elif number not in cars_list and check_reg and self.caller not in callers:
-            self.status = 'Successfully registered'
-            cars_list.append(number)
-            callers.append(self.caller)
-            Car.count += 1
+        if number != None:
+            pattern = re.compile(r'[A-Z]{3}[-]\d{3}')
+            check_reg = pattern.search(number)
+            if not check_reg:
+                self.status = 'Not valid number'
+            elif number in Car.registered_cars:
+                self.status = 'Already registered number'
+            elif number not in Car.registered_cars:
+                self.status = 'Successfully registered'
+        else:
+            self.status = None
         return self.status
-
-    def car_registred(self):
-        if len(cars_list) == 0:
-            self.registered_cars = "There are no registered cars at this moment"
-        else:
-            self.registered_cars = cars_list
-        return self.registered_cars
-
-    def cars_count(self):
-        if len(cars_list) == 0:
-            self.car_count = "There are no registered cars at this moment"
-        else:
-            self.car_count = Car.count
-        return self.car_count
-
-    def __del__(self):
-        if self.car_number in cars_list and Car:
-            cars_list.remove(self.car_number)
-            Car.count -= 1
 
 
 if __name__ == '__main__':
-    c = Car('CCC-344')
-    print(c.status)
-    print(c.car_number)
-    print(c.registered_cars)
-    print(c.car_count)
+    a = Car('AAA-002')
+    print(a.car_number)
+    print(a.registered_cars)
+    print(a.car_count)
+    print(a.status)
