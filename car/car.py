@@ -27,11 +27,6 @@ class Car:
         else:
             self.status = 'The car has already number assigned'
 
-    @car_number.deleter
-    def car_number(self):
-        if self.car_number:
-            Car.registered_cars.remove(self.car_number)
-            Car.car_count -= 1
 
     def car_status(self, number: str) -> str:
         if number != None:
@@ -47,10 +42,25 @@ class Car:
             self.status = None
         return self.status
 
+    def __del__(self):
+        if self.car_number in Car.registered_cars and Car:
+            Car.registered_cars.remove(self.car_number)
+            Car.car_count -= 1
+
 
 if __name__ == '__main__':
     a = Car('AAA-002')
+    b = Car('BBB-002')
+    c = Car('CCC-002')
     print(a.car_number)
     print(a.registered_cars)
     print(a.car_count)
     print(a.status)
+    del a
+    print("test", c.registered_cars)
+    print(c.car_count)
+    d = Car('CC3-002')
+    print(d.car_number)
+    print(d.registered_cars)
+    print(d.car_count)
+    print(d.status)
