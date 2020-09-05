@@ -6,7 +6,7 @@ def test_car_number_add_1():
     assert test1.car_number == 'TTT-111'
     assert test1.status == 'Successfully registered'
     assert test1.car_count == 1
-    assert test1.registered_cars == ['TTT-111']
+    assert test1.registered_cars == 'Registered cars: TTT-111'
 
 
 def test_car_number_add_2():
@@ -16,7 +16,7 @@ def test_car_number_add_2():
     assert test3.car_number == 'TTT-222'
     assert test3.status == 'Successfully registered'
     assert test3.car_count == 2
-    assert test3.registered_cars == ['TTT-333', 'TTT-222']
+    assert test3.registered_cars == 'Registered cars: TTT-222, TTT-333'
 
 
 def test_car_number_add_3():
@@ -27,7 +27,7 @@ def test_car_number_add_3():
     assert test5.car_number == 'TTT-555'
     assert test5.status == 'The car has already number assigned'
     assert test5.car_count == 2
-    assert test5.registered_cars == ['TTT-444', 'TTT-555']
+    assert test5.registered_cars == 'Registered cars: TTT-444, TTT-555'
 
 
 def test_car_number_add_4():
@@ -35,7 +35,7 @@ def test_car_number_add_4():
     assert test6.car_number == None
     assert test6.status == 'Not valid number'
     assert test6.car_count == 0
-    assert test6.registered_cars == []
+    assert test6.registered_cars == 'There are no registered cars at this moment'
 
 
 def test_car_number_add_5():
@@ -44,7 +44,7 @@ def test_car_number_add_5():
     assert test7.car_number == None
     assert test7.status == 'Not valid number'
     assert test7.car_count == 0
-    assert test7.registered_cars == []
+    assert test7.registered_cars == 'There are no registered cars at this moment'
 
 
 def test_car_number_add_6():
@@ -53,7 +53,7 @@ def test_car_number_add_6():
     assert test9.car_number == None
     assert test9.status == 'Already registered number'
     assert test9.car_count == 1
-    assert test9.registered_cars == ['TTT-666']
+    assert test9.registered_cars == 'Registered cars: TTT-666'
 
 
 def test_car_number_del():
@@ -62,4 +62,4 @@ def test_car_number_del():
     test10.car_number = 'TTT-777'
     del test10
     assert test11.car_count == 1
-    assert test11.registered_cars == ['TTT-888']
+    assert test11.registered_cars == 'Registered cars: TTT-888'
