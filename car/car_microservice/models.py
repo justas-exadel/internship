@@ -1,4 +1,12 @@
 import re
+from . import db
+
+
+class Car_Register(db.Model):
+    __tablename__ = 'car'
+    id = db.Column(db.Integer, primary_key=True)
+    car_number = db.Column("Car Number", db.String)
+    status = db.Column("Car Status", db.String)
 
 
 class CarStatus:
@@ -74,21 +82,3 @@ class Car:
         if self.car_number in Car._registered_cars_list and Car:
             Car._registered_cars_list.remove(self.car_number)
             Car.car_count -= 1
-
-
-if __name__ == '__main__':
-    a = Car('AAA-002')
-    print(a.car_number)
-    print(a.registered_cars)
-    print(a.car_count)
-    print(a.status)
-    h = Car()
-    h.car_number = 'TTT-555'
-    g = Car()
-    g.car_number = 'TT1-ee3'
-    print(g.car_number)
-    print(g.registered_cars)
-    print(g.car_count)
-    print(g.status)
-    i = Car()
-    print(i.registered_cars)
