@@ -1,5 +1,5 @@
-from . import app, db
-from .models import Car, Car_Register
+from __init__ import app, db
+from models import Car, Car_Register
 from flask import request, jsonify
 
 
