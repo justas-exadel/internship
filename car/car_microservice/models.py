@@ -1,5 +1,5 @@
 import re
-from . import db
+from __init__ import db
 
 
 class Car_Register(db.Model):
