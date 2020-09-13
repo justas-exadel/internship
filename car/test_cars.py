@@ -1,6 +1,6 @@
 import pytest
 
-from car import car
+from CarService import car
 
 
 @pytest.fixture()
