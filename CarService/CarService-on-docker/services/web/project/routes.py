@@ -1,5 +1,5 @@
-from __init__ import app, db, limiter
-from models import Car, Car_Register, NumbersDb
+from . import app, db, limiter
+from project.models import Car, Car_Register, NumbersDb
 from flask import request, jsonify
 
 
@@ -31,7 +31,6 @@ def get_car_count():
 @limiter.limit("1/second", override_defaults=False)
 def delete_cars():
     num = request.args.get('number')
-    print(num)
     del_car = NumbersDb().delete_number(num)
     if del_car:
         return jsonify({"info: Deleted successfully"})

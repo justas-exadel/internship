@@ -1,25 +1,5 @@
-from flask import Flask, request, jsonify
-from flask_json import FlaskJSON
-from flask_sqlalchemy import SQLAlchemy
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-import os
 import re
-
-app = Flask(__name__)
-
-limiter = Limiter(
-    app,
-    key_func=get_remote_address,
-    default_limits=["200 per day", "50 per hour"]
-)
-
-FlaskJSON(app)
-basedir = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir,
-                                                                    'cars.db')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
+from . import db
 
 
 class Car_Register(db.Model):
@@ -112,44 +92,3 @@ class Car:
         if validation is None:
             return False
         return True
-
-
-@app.route('/add_car', methods=['POST'])
-@limiter.limit("1/second", override_defaults=False)
-def add_car():
-    if request.method == 'POST':
-        req_json = request.json
-        number = req_json['number']
-        new_car = Car(number)
-        new_car_status = new_car.status
-        return jsonify({f"info: {new_car_status}"})
-
-
-@app.route('/registered_cars', methods=['GET'])
-@limiter.limit("1/second", override_defaults=False)
-def get_cars():
-    result = NumbersDb().registered_cars()
-    return jsonify({f"info: {result}"})
-
-
-@app.route('/car_count', methods=['GET'])
-@limiter.limit("1/second", override_defaults=False)
-def get_car_count():
-    result = NumbersDb().car_count()
-    return jsonify({f"info: {result}"})
-
-
-@app.route('/delete_car', methods=['DELETE'])
-@limiter.limit("1/second", override_defaults=False)
-def delete_cars():
-    num = request.args.get('number')
-    print(num)
-    del_car = NumbersDb().delete_number(num)
-    if del_car:
-        return jsonify({"info: Deleted successfully"})
-    else:
-        return jsonify({"info: Can not delete this number"})
-
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
