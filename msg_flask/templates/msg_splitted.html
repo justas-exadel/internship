@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<h1> Your splitted message:</h1>
+<hr>
+{%for msg in data%}
+<p>{{msg}}</p>
+{%endfor%}
+<a href="{{url_for('message_text')}}">Format another message</a>
+
+{% endblock %}
