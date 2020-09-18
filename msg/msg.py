@@ -1,145 +1,130 @@
+import textwrap
 import math
 import re
 
-
 class Message_Splitter:
+    MIN_TAIL_LENGTH = 6
+    text_msg = []
+    msg = ""
 
     def __init__(self, text, max_length):
         self.text = text
         self.max_length = max_length
+        self.optimal_length = self.optimal_msg_length()
 
-    def format_msg(self):
-        def check_max_len(len):
-            if len < 8:
-                print(
-                    "Maximum length is too low, please choose the bigger one.")
-                exit()
+    def check_max_len(self):
+        if self.max_length < 11:
+            print(
+                "Maximum length cannot be lower than 11.")
+            exit()
 
-        check_max_len(self.max_length)
+    def optimal_msg_length(self):
         text_chars = len(self.text)
         msg_count = math.ceil(text_chars / self.max_length)
         msg_count_with_tail = math.ceil(
-            (msg_count * 6 + text_chars) / self.max_length)
-        tail = 6 + 2 * (len(str(msg_count_with_tail)) - 1)
-        optimal_length = self.max_length - tail
+            (msg_count * self.MIN_TAIL_LENGTH + text_chars) / self.max_length)
+        tail = self.MIN_TAIL_LENGTH + 2 * (len(str(msg_count_with_tail)))
+        optimal_len = self.max_length - tail
+        return optimal_len
 
-        good_text = []
-        text_cleaned = self.text.split(" ")
+    def split_long_word(self, word):
+        sep_word = textwrap.wrap(word, width=self.optimal_length)
+        sep_word_list = [x for x in sep_word]
+        return sep_word_list
 
-        msg_fitted = ""
+    def add_word(self, word):
+        if len(self.msg) + len(word) + 1 <= self.optimal_length:
+            self.msg += f"{word} "
+        else:
+            self.add_msg()
+            self.msg += f"{word} "
 
-        def add_text(max_len=self.max_length):
-            striped_text = msg_fitted.strip()
-            if striped_text != "":
-                good_text.append(striped_text)
-            else:
+    def add_msg(self):
+        if len(self.msg) < 2:
+            pass
+        else:
+            self.text_msg.append(self.msg)
+            self.msg = ""
+
+    def valid_word(self, word):
+        if len(word) > self.optimal_length:
+            words = self.split_long_word(word)
+            for w in words:
+                self.add_word(w)
+            return False
+        else:
+            return True
+
+    def add_tail(self, text_msg):
+        length = len(text_msg)
+        final_text = []
+        n = 1
+        for item in text_msg:
+            text_with_tail = f"{item.strip()} ({n}/{length})"
+            final_text.append(text_with_tail)
+            n = n + 1
+        return final_text
+
+    def format(self):
+        self.check_max_len()
+        splitted_msg = self.text.split()
+        for item in splitted_msg:
+            valid = self.valid_word(item)
+            if valid is True:
+                self.add_word(item)
+        if len(self.msg) > 0:
+            self.add_msg()
+        msg_with_tail = self.add_tail(self.text_msg)
+        check_result = self.valid_msg_length(msg_with_tail)
+        return check_result
+
+    def valid_msg_length(self, msg_text):
+        for msg in msg_text:
+            msg_index = msg_text.index(msg)
+            next_item = msg_index + 1
+            try:
+                next_word = msg_text[next_item].split()
+                if len(msg + " " + next_word[0]) <= self.max_length:
+                    self.format_final_msg(msg_text, msg_index)
+            except IndexError:
                 pass
+        new_text_list = self.format_tail(msg_text)
+        msg_with_tail = self.add_tail(new_text_list)
+        return msg_with_tail
 
-        def add_message(message):
-            msg_fitted + message.strip()
+    def check_regex(self, word):
+        find_word = re.search(re.escape(word), self.text)
+        if find_word is None:
+            return False
+        else:
+            return True
 
-        for word in text_cleaned:
-            if len(f'{msg_fitted} {word}') <= optimal_length:
-                msg_fitted = f'{msg_fitted} {word}'
-                add_message(msg_fitted)
-            elif len(f'{msg_fitted} {word}') > optimal_length:
-                add_text()
-                msg_fitted = word
+    def format_final_msg(self, msg_text, msg_index):
+        next_msg = msg_text[msg_index + 1].split()
+        next_element = next_msg[0]
+        current_msg = msg_text[msg_index].split()
+        current_msg.insert(-1, next_element)
+        check_word = self.check_regex(current_msg[-3] + (current_msg[-2]))
+        if check_word is True:
+            current_msg[-2] = current_msg[-3] + current_msg[-2]
+            del current_msg[-3]
+        msg_text[msg_index] = " ".join(current_msg)
+        del next_msg[0]
+        if len(next_msg) == 1:
+            del msg_text[msg_index + 1]
+        else:
+            msg_text[msg_index + 1] = " ".join(next_msg)
+        self.valid_msg_length(msg_text)
+        return msg_text
 
-        if msg_fitted:
-            add_message(msg_fitted)
-            add_text()
-
-        def add_tail(text_list: list, max_length, length=None) -> list:
-            def chck_max_msg(final_text):
-                length = len(final_text)
-                pattern = re.compile(r'(\d+)(?!.*\d)')
-                res = pattern.search(final_text[0])
-                result = res.group()
-                if len(final_text) != int(result):
-                    new_list = []
-                    for item in final_text:
-                        x = re.sub('(\d+)(?!.*\d)', str(length), item)
-                        new_list.append(x)
-                    return new_list
-                return final_text
-
-            def check_msg_len(final_text):
-
-                def add_word_to_final_text():
-                    split_msg = final_text[-1].split()
-                    split_msg.insert(-1, text_list[index_item + 1])
-                    final_text[-1] = " ".join(
-                        split_msg)  # insert additional word into final_text list
-                    text_list[index_item + 1] = text_list[
-                        index_item + 1].replace(
-                        text_list[index_item + 1],
-                        "").strip()  # delete inserted word from text_list
-
-                def add_word_to_text_list():
-                    # if next word from next message fits - fixing text_list
-                    string_parts = final_text[-1].split()
-                    result = string_parts[-2]  # before tail
-
-                    if text_list[index_item] == text_list[-1]:
-                        text_list.append("")
-
-                    text_list[
-                        index_item + 1] = f'{result} {text_list[index_item + 1]}'.strip()  # insert into text_list additional word
-                    text_list[index_item] = text_list[
-                        index_item].replace(result, "").strip()
-                    final_text[-1] = final_text[-1].replace(result, "").replace("  ", " ")
-
-                def split_word():
-                    # doesn't fit one long word
-                    words_list = final_text[-1].split()
-                    tail_len = len(words_list[-1])
-                    cut_word_edge = max_length - tail_len - 1
-                    splitted_word = text_list[index_item][:cut_word_edge]
-                    final_text[-1] = " ".join([splitted_word, words_list[-1]])
-                    try:
-                        text_list[
-                            index_item + 1] = f'{text_list[index_item][len(splitted_word):]} {text_list[index_item + 1]}'.strip()  # insert into text_list additional word
-
-                    except IndexError:
-                        text_list.append(
-                            f'{text_list[index_item][len(splitted_word):]}')  # insert into text_list additional word
-                    text_list[index_item] = splitted_word
-
-                if len(final_text[-1]) <= max_length:
-
-                    if index_item + 1 <= text_list.index(
-                            text_list[-1]):  # if not last element of list
-                        # try to add next element and check if does it fit
-                        if len(
-                                f'{final_text[-1]} {text_list[index_item + 1]}') <= max_length:  # if length is enough try to add a word
-
-                            add_word_to_final_text()
-
-                            if text_list[
-                                index_item + 1] == "":  # if text_list item is empty after deleting - item popped
-                                text_list.pop(index_item + 1)
-                            add_word_to_text_list()
-
-                elif len(final_text[-1]) > max_length:
-                    split_word()
-
-            final_text = []
-            if length == None:
-                length = len(text_list)
-            n = 1
-
-            for item in text_list:
-                index_item = text_list.index(item)
-                final_text.append(f"{item} ({n}/{length})")
-                n = n + 1
-                check_msg_len(final_text)
-
-            return chck_max_msg(final_text)
-
-        return add_tail(good_text, max_length=self.max_length)
-
+    def format_tail(self, msg_list):
+        new_msg_list = []
+        pattern = re.compile(r'\s\W\d+/\d+\W')
+        for item in msg_list:
+            res = re.sub(pattern, "", item)
+            new_msg_list.append(res)
+        return new_msg_list
 
 if __name__ == '__main__':
     print(Message_Splitter(
-        "Splits long message to multiple messages in order to fit within an arbitrary message length limit (useful for SMS, Twitter, etc.)..", 35).format_msg())
+        "Splits long message to multiple messages in order to fit within an arbitrary message length limit (useful for SMS, Twitter, etc.)..", 18).format())
