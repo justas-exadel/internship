@@ -85,7 +85,7 @@ class Message_Splitter:
             n = n + 1
         return final_text
 
-    def format(self):
+    def format(self) -> list:
         self.check_max_len()
         splitted_msg = self.text.split()
         for item in splitted_msg:
