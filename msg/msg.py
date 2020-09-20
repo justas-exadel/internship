@@ -8,7 +8,7 @@ class Message_Splitter:
     text_msg = []
     msg = ""
 
-    def __init__(self, text, max_length):
+    def __init__(self, text: str, max_length: int):
         self.text = text
         self.max_length = max_length
         self.optimal_length = self.optimal_msg_length()
@@ -19,7 +19,7 @@ class Message_Splitter:
                 "Maximum length cannot be lower than 11.")
             exit()
 
-    def optimal_msg_length(self):
+    def optimal_msg_length(self) -> int:
         text_chars = len(self.text)
         msg_count = math.ceil(text_chars / self.max_length)
         msg_count_with_tail = math.ceil(
@@ -28,12 +28,12 @@ class Message_Splitter:
         optimal_len = self.max_length - tail
         return optimal_len
 
-    def split_long_word(self, word):
+    def split_long_word(self, word: str) -> list:
         sep_word = textwrap.wrap(word, width=self.optimal_length)
         sep_word_list = [x for x in sep_word]
         return sep_word_list
 
-    def add_word(self, word):
+    def add_word(self, word: str):
         if len(self.msg) + len(word) + 1 <= self.optimal_length:
             self.msg += f"{word} "
         else:
@@ -47,7 +47,7 @@ class Message_Splitter:
             self.text_msg.append(self.msg)
             self.msg = ""
 
-    def valid_word(self, word):
+    def valid_word(self, word: str) -> bool:
         if len(word) > self.optimal_length:
             words = self.split_long_word(word)
             for w in words:
@@ -56,7 +56,7 @@ class Message_Splitter:
         else:
             return True
 
-    def add_tail(self, text_msg):
+    def add_tail(self, text_msg: list) -> list:
         length = len(text_msg)
         final_text = []
         n = 1
@@ -79,7 +79,7 @@ class Message_Splitter:
         check_result = self.valid_msg_length(msg_with_tail)
         return check_result
 
-    def valid_msg_length(self, msg_text):
+    def valid_msg_length(self, msg_text: list) -> list:
         for msg in msg_text:
             msg_index = msg_text.index(msg)
             next_item = msg_index + 1
@@ -93,14 +93,14 @@ class Message_Splitter:
         msg_with_tail = self.add_tail(new_text_list)
         return msg_with_tail
 
-    def check_regex(self, word):
+    def check_regex(self, word: str) -> bool:
         find_word = re.search(re.escape(word), self.text)
         if find_word is None:
             return False
         else:
             return True
 
-    def format_final_msg(self, msg_text, msg_index):
+    def format_final_msg(self, msg_text: list, msg_index: int) -> list:
         next_msg = msg_text[msg_index + 1].split()
         next_element = next_msg[0]
         current_msg = msg_text[msg_index].split()
@@ -118,7 +118,7 @@ class Message_Splitter:
         self.valid_msg_length(msg_text)
         return msg_text
 
-    def format_tail(self, msg_list):
+    def format_tail(self, msg_list: list) -> list:
         new_msg_list = []
         pattern = re.compile(r'\s\W\d+/\d+\W')
         for item in msg_list:
