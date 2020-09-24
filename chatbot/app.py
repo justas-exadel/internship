@@ -39,14 +39,12 @@ def time_now():
 
 
 def verify_fb_token(token_sent):
-    if token_sent == VERIFY_TOKEN:
-        print("asd", request.data)
+    if token_sent == VERIFY_TOKEN:       
         return request.args.get("hub.challenge")
     return 'Invalid verification token'
 
 
-def send_message(recipient_id, response):
-    print("ddd", request.data)
+def send_message(recipient_id, response):   
     bot.send_text_message(recipient_id, response)
     return "success"
 
