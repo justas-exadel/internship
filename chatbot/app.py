@@ -1,4 +1,4 @@
-import time
+import datetime
 from flask import Flask, request
 from pymessenger.bot import Bot
 
@@ -25,7 +25,8 @@ def receive_message():
                     recipient_id = message['sender']['id']
                     inputs = message['message'].get('text')
                     if inputs.lower() in time_meanings:
-                        response_sent_text = time_now()
+                        ts = output["entry"][0]["messaging"][0]["timestamp"]
+                        response_sent_text = time_now(ts)                        
                         send_message(recipient_id, response_sent_text)
                     else:
                         response_sent_text = 'Did not understand the question.'
@@ -33,8 +34,9 @@ def receive_message():
     return "Message Processed"
 
 
-def time_now():
-    now = time.strftime("%H:%M")
+def time_now(timestamp):
+    dts = datetime.datetime.fromtimestamp(timestamp / 1000.0)
+    now = dts.strftime("%H:%M")    
     return str(now)
 
 
