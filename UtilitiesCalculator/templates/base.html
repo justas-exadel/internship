@@ -22,9 +22,19 @@
                 flex-direction: column;
                 justify-content: center;
                 align-items: center;
-
             }
-
+            .date_apartment{
+            display: flex;
+            justify-content: space-between;
+            margin: 40px 0 40px 0;
+            }
+            .select_data{
+            width: 30%;
+            }
+        .buttons{
+        display: flex;
+        justify-content: space-between;
+        }
     </style>
 </head>
 <body>
@@ -39,7 +49,7 @@
             <ul class="navbar-nav ml-auto">
                 {% if current_user.is_authenticated %}
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Calculate Utilities</a>
+                    <a class="nav-link" href="/calculate_utilities">Calculate Utilities</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">Generate Report</a>
@@ -51,7 +61,7 @@
                     <a class="nav-link" href="#">Reports</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Admin</a>
+                    <a class="nav-link" href="/admin">Admin</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">Profile</a>
