@@ -1,24 +1,22 @@
-from datetime import datetime
-
-from flask import Blueprint, url_for
-from quart import redirect
+from flask_admin.contrib.sqla import ModelView
 from sqlalchemy.orm import relationship
 from flask_login import UserMixin
 from sqlalchemy import Column, Integer, String, ForeignKey, Float
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-import UtilitiesCalculator
-from UtilitiesCalculator import db, app, ModelView, Admin, BaseView, expose
+from flask_login import LoginManager, current_user
+from __init__ import db, app, admin
+from flask_admin import BaseView, expose
+from flask import redirect, url_for
 
 
 class User(db.Model, UserMixin):
     __tablename__ = "USER"
-    __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column("Name", db.String(20), unique=True, nullable=False)
     email = db.Column("Email", db.String(120), unique=True,
-                          nullable=False)
+                      nullable=False)
     password = db.Column("Password", db.String(60), unique=True,
-                            nullable=False)
+                         nullable=False)
 
     def get_reset_token(self, expires_sec=1800):
         s = Serializer(app.config['SECRET_KEY'], expires_sec)
@@ -33,50 +31,70 @@ class User(db.Model, UserMixin):
             return None
         return User.query.get(user_id)
 
+
 class House(db.Model):
     __tablename__ = 'HOUSE'
-    __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
     address = db.Column('Address', db.String, nullable=False)
-    apartments_count = db.Column('Apartments Total', db.Integer, nullable=False)
+    apartments_count = db.Column('Apartments Total', db.Integer,
+                                 nullable=False)
 
 
 class Apartment(db.Model):
     __tablename__ = 'APARTMENT'
-    __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
     address = db.Column('Address', db.String, nullable=False)
     square_feet = db.Column('Square Feet (m3)', db.Float, nullable=True)
 
+    def __init__(self, address, square_feet):
+        self.address = address
+        self.square_feet = square_feet
+
+    def __repr__(self):
+        return self.address
+
 
 class Renter(db.Model):
     __tablename__ = 'RENTER'
-    __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column('Name', db.String, nullable=False)
     surname = db.Column('Surname', db.String, nullable=False)
     email = db.Column('Email', db.String, nullable=False)
     phone = db.Column('Phone', db.String, nullable=True)
 
+
 class Service(db.Model):
     __tablename__ = 'SERVICE'
-    __table_args__ = {'extend_existing': True}
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column('Name', db.String, nullable=False)
+
+    def __init__(self, name):
+        self.name = name
+
+    def __repr__(self):
+        return self.name
 
 
 class ServiceCost(db.Model):
     __tablename__ = 'SERVICE_COST'
-    __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column('Name', db.String, nullable=False)
     cost = db.Column('Cost', db.Float, nullable=False)
     service_ID = db.Column(db.Integer, ForeignKey('SERVICE.id'))
     service = relationship("Service")
 
+    def __init__(self, name, cost, service_ID):
+        self.name = name
+        self.cost = cost
+        self.service_ID = service_ID
+
+    def __str__(self):
+        return f" {self.name} - {self.cost} Eur"
+
+
 class Electricity(db.Model):
     __tablename__ = 'ELECTRICITY'
-    __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
     year = db.Column('Year', db.Integer)
     month = db.Column('Month', db.Integer)
@@ -92,7 +110,6 @@ class Electricity(db.Model):
 
 class Gas(db.Model):
     __tablename__ = 'GAS'
-    __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
     year = db.Column('Year', db.Integer)
     month = db.Column('Month', db.Integer)
@@ -108,7 +125,6 @@ class Gas(db.Model):
 
 class HotWater(db.Model):
     __tablename__ = 'HOT_WATER'
-    __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
     year = db.Column('Year', db.Integer)
     month = db.Column('Month', db.Integer)
@@ -124,7 +140,6 @@ class HotWater(db.Model):
 
 class ColdWater(db.Model):
     __tablename__ = 'COLD_WATER'
-    __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
     year = db.Column('Year', db.Integer)
     month = db.Column('Month', db.Integer)
@@ -140,7 +155,6 @@ class ColdWater(db.Model):
 
 class OtherUtilities(db.Model):
     __tablename__ = 'OTHER_UTILITIES'
-    __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
     year = db.Column('Year', db.Integer)
     month = db.Column('Month', db.Integer)
@@ -153,7 +167,6 @@ class OtherUtilities(db.Model):
 
 class Rent(db.Model):
     __tablename__ = 'RENT'
-    __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
     year = db.Column('Year', db.Integer)
     month = db.Column('Month', db.Integer)
@@ -163,9 +176,9 @@ class Rent(db.Model):
     cost = relationship("ServiceCost")
     sum = db.Column('Sum', db.Float)
 
+
 class Report(db.Model):
     __tablename__ = 'REPORT'
-    __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
     renter_ID = db.Column(db.Integer, ForeignKey('RENTER.id'))
     renter = relationship("Renter")
@@ -177,43 +190,36 @@ class Report(db.Model):
     hot_water = relationship("HotWater")
     cold_water_ID = db.Column(db.Integer, ForeignKey('COLD_WATER.id'))
     cold_water = relationship("ColdWater")
-    other_utilities_ID = db.Column(db.Integer, ForeignKey('OTHER_UTILITIES.id'))
+    other_utilities_ID = db.Column(db.Integer,
+                                   ForeignKey('OTHER_UTILITIES.id'))
     other_utilities = relationship("OtherUtilities")
     rent_ID = db.Column(db.Integer, ForeignKey('RENT.id'))
     rent = relationship("Rent")
     sum_total = db.Column('Total Eur', db.Float)
 
 
-class MyModelView(ModelView):
+class ManoModelView(ModelView):
     def is_accessible(self):
-        return current_user.is_authenticated and \
-               current_user.email == EMAIL_HOST_USER
-
-
-admin = Admin(app, name='EDIT', template_mode='bootstrap3')
-# admin = Blueprint('admin', __name__, url_prefix='/admin')
-# current_app.config['INDEX_TEMPLATE']
-# app.register_blueprint(admin)
+        return current_user.is_authenticated and current_user.el_pastas == "el@pastas.lt"
 
 
 class MyView(BaseView):
     @expose('/')
-    def home(self):
+    def index(self):
         return redirect(url_for('home'))
 
-admin.add_view(MyView(name='Utilities Calculator',endpoint='db'))
-# from UtilitiesCalculator.models import User, House, Apartment, Renter, Service, ServiceCost, Electricity,Gas, ColdWater, HotWater, OtherUtilities, Rent, Report
 
-admin.add_view(MyModelView(User, db.session))
-admin.add_view(MyModelView(House, db.session))
-admin.add_view(MyModelView(Apartment, db.session))
-admin.add_view(MyModelView(Renter, db.session))
-admin.add_view(MyModelView(Service, db.session))
-admin.add_view(MyModelView(ServiceCost, db.session))
-admin.add_view(MyModelView(Electricity, db.session))
-admin.add_view(MyModelView(Gas, db.session))
-admin.add_view(MyModelView(HotWater, db.session))
-admin.add_view(MyModelView(ColdWater, db.session))
-admin.add_view(MyModelView(OtherUtilities, db.session))
-admin.add_view(MyModelView(Rent, db.session))
-admin.add_view(MyModelView(Report, db.session))
+admin.add_view(MyView(name='Back to Page'))
+admin.add_view(ModelView(User, db.session))
+admin.add_view(ModelView(House, db.session))
+admin.add_view(ModelView(Apartment, db.session))
+admin.add_view(ModelView(Renter, db.session))
+admin.add_view(ModelView(Service, db.session))
+admin.add_view(ModelView(ServiceCost, db.session))
+admin.add_view(ModelView(Electricity, db.session))
+admin.add_view(ModelView(Gas, db.session))
+admin.add_view(ModelView(HotWater, db.session))
+admin.add_view(ModelView(ColdWater, db.session))
+admin.add_view(ModelView(OtherUtilities, db.session))
+admin.add_view(ModelView(Rent, db.session))
+admin.add_view(ModelView(Report, db.session))

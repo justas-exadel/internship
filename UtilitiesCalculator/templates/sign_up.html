@@ -9,7 +9,8 @@
                 {{ form.name.label(class="form-control-label") }}
 
                 {% if form.name.errors %}
-                {{ form.name(class="form-control form-control-lg is-invalid") }}
+                {{ form.name(class="form-control form-control-lg is-invalid")
+                }}
                 <div class="invalid-feedback">
                     {% for error in form.name.errors %}
                     <span>{{ error }}</span>
@@ -22,7 +23,8 @@
             <div class="form-group">
                 {{ form.email.label(class="form-control-label") }}
                 {% if form.email.errors %}
-                {{ form.email(class="form-control form-control-lg is-invalid") }}
+                {{ form.email(class="form-control form-control-lg is-invalid")
+                }}
                 <div class="invalid-feedback">
                     {% for error in form.email.errors %}
                     <span>{{ error }}</span>
@@ -35,7 +37,8 @@
             <div class="form-group">
                 {{ form.password.label(class="form-control-label") }}
                 {% if form.password.errors %}
-                {{ form.password(class="form-control form-control-lg is-invalid") }}
+                {{ form.password(class="form-control form-control-lg
+                is-invalid") }}
                 <div class="invalid-feedback">
                     {% for error in form.password.errors %}
                     <span>{{ error }}</span>
@@ -48,7 +51,8 @@
             <div class="form-group">
                 {{ form.repeated_psw.label(class="form-control-label") }}
                 {% if form.repeated_psw.errors %}
-                {{ form.repeated_psw(class="form-control form-control-lg is-invalid") }}
+                {{ form.repeated_psw(class="form-control form-control-lg
+                is-invalid") }}
                 <div class="invalid-feedback">
                     {% for error in form.repeated_psw.errors %}
                     <span>{{ error }}</span>
@@ -66,7 +70,8 @@
 </div>
 <div class="border-top pt-3">
     <small class="text-muted">
-        Have already account? <a class="ml-2" href="{{ url_for('sign_in') }}">Sign In</a>
+        Have already account? <a class="ml-2" href="{{ url_for('sign_in') }}">Sign
+        In</a>
     </small>
 </div>
 {% endblock content %}

@@ -25,19 +25,26 @@
             <tr>
                 <th scope="row">Electricity</th>
                 <td>{{form.electricity_to(class="form_input")}}</td>
-                <td>{{form.electricity_from(class="form_input")}}</td>
-                <td><input class="form_input" name="electricity_dif" type="text"
+                <td><input class="form_input" type="text"
+                           name="electricity_from"
+                           value="{%if data_from_last%}{{data_from_last.get('electricity_from')}}{%endif%}">
+                </td>
+                <td><input class="form_input" name="electricity_dif"
+                           type="text"
                            value="{%if data%}{{data.get('electricity_dif')}}{%endif%}">
                 </td>
                 <td>{{form.electricity_cost(class="form_input")}}</td>
-                <td><input class="form_input" name="electricity_sum" type="text"
+                <td><input class="form_input" name="electricity_sum"
+                           type="text"
                            value="{%if data%}{{data.get('electricity_sum')}}{%endif%}">
                 </td>
             </tr>
             <tr>
                 <th scope="row">Gas</th>
                 <td>{{form.gas_to(class="form_input")}}</td>
-                <td>{{form.gas_from(class="form_input")}}</td>
+                <td><input class="form_input" type="text" name="gas_from"
+                           value="{%if data_from_last%}{{data_from_last.get('gas_from')}}{%endif%}">
+                </td>
                 <td><input class="form_input" name="gas_dif" type="text"
                            value="{%if data%}{{data.get('gas_dif')}}{%endif%}">
                 </td>
@@ -49,7 +56,10 @@
             <tr>
                 <th scope="row">Cold Water</th>
                 <td>{{form.cold_water_to(class="form_input")}}</td>
-                <td>{{form.cold_water_from(class="form_input")}}</td>
+                <td><input class="form_input" type="text"
+                           name="cold_water_from"
+                           value="{%if data_from_last%}{{data_from_last.get('cold_water_from')}}{%endif%}">
+                </td>
                 <td><input class="form_input" name="cold_water_dif" type="text"
                            value="{%if data%}{{data.get('cold_water_dif')}}{%endif%}">
                 </td>
@@ -61,7 +71,9 @@
             <tr>
                 <th scope="row">Hot Water</th>
                 <td>{{form.hot_water_to(class="form_input")}}</td>
-                <td>{{form.hot_water_from(class="form_input")}}</td>
+                <td><input class="form_input" type="text" name="hot_water_from"
+                           value="{%if data_from_last%}{{data_from_last.get('hot_water_from')}}{%endif%}">
+                </td>
                 <td><input class="form_input" name="hot_water_dif" type="text"
                            value="{%if data%}{{data.get('hot_water_dif')}}{%endif%}">
                 </td>
@@ -96,7 +108,7 @@
                 <td></td>
                 <td></td>
                 <td></td>
-               <td><input class="form_input" name="total_sum" type="text"
+                <td><input class="form_input" name="total_sum" type="text"
                            value="{%if data%}{{data.get('total_sum')}}{%endif%}">
                 </td>
             </tr>
