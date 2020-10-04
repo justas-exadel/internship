@@ -1,13 +1,17 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, BooleanField, IntegerField, \
     SubmitField, PasswordField, FloatField, SelectField
-from wtforms.validators import DataRequired, ValidationError, EqualTo, Email
+from wtforms.validators import DataRequired, ValidationError, EqualTo, Email, \
+    Optional
 from wtforms_sqlalchemy.fields import QuerySelectField
 from models import User, Apartment, ServiceCost, Service, Electricity
 from functools import partial
 from sqlalchemy import orm
 from datetime import date
-
+from flask_login import current_user
+from flask_wtf import Form
+from wtforms import SelectMultipleField
+from wtforms.widgets import ListWidget, CheckboxInput
 
 class SignInForm(FlaskForm):
     email = StringField('Email', [DataRequired()])
@@ -49,6 +53,27 @@ class SignUpForm(FlaskForm):
         if users:
             raise ValidationError('User can be only one!')
         return True
+
+class ProfileUpdateForm(FlaskForm):
+    name = StringField('Name', [DataRequired()])
+    email = StringField('Email', [DataRequired()])
+    submit = SubmitField('Update')
+
+    def check_email(self, email):
+        if email.data != current_user.email:
+            user = User.query.filter_by(
+                email=email.data).first()
+            if user:
+                raise ValidationError(
+                    'This email is already taken. Choose another one.')
+
+    def check_name(self, name):
+        if name.data != current_user.name:
+            user = User.query.filter_by(
+                name=name.data).first()
+            if user:
+                raise ValidationError(
+                    'This name is already taken. Choose another one.')
 
 
 class GetApartments:
@@ -206,11 +231,14 @@ class UtilitiesForm(FlaskForm):
                        default=GetDate().getyears()[1][0])
     month = SelectField('Month', choices=GetDate().getmonths(), default=
     GetDate().getmonths()[GetDate().getcurrentmonth()][0])
+    submit = SubmitField('Calculate')
+    confirm = SubmitField('Confirm')
 
+class ApartmentForm(FlaskForm):
     apartment = QuerySelectField(
         'Apartment',
         query_factory=GetApartments().getApartmentFactory(['id', 'address']),
         get_label='address'
     )
-    submit = SubmitField('Calculate')
-    confirm = SubmitField('Confirm')
+    submit = SubmitField('Select')
+

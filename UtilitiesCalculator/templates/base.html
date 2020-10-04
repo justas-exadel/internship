@@ -38,6 +38,13 @@
         justify-content: space-between;
         }
 
+        .reports{
+        width: 50%!important;
+        }
+        .report-table{
+        width: 50%;
+        }
+
     </style>
 </head>
 <body>
@@ -54,23 +61,17 @@
             <ul class="navbar-nav ml-auto">
                 {% if current_user.is_authenticated %}
                 <li class="nav-item">
-                    <a class="nav-link" href="/calculate_utilities">Calculate
+                    <a class="nav-link" href="/select_apartment">Calculate
                         Utilities</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Generate Report</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Apartments</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Reports</a>
+                    <a class="nav-link" href="/generate_report">Report</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/admin">Admin</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Profile</a>
+                    <a class="nav-link" href="/profile">Profile</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/sign_out">Sign out</a>

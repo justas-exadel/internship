@@ -1,14 +1,14 @@
 from flask import render_template, redirect, url_for, flash, request
 from forms import SignInForm, SignUpForm, PasswordResetForm, UtilitiesForm, \
-    RequestResetForm
+    RequestResetForm, ProfileUpdateForm, ApartmentForm
 from flask_paginate import Pagination, get_page_args
 from flask_login import logout_user, login_user, login_required
 from flask_login import current_user
 from __init__ import app, db, bcrypt, login_manager
 from main import send_reset_email
 from models import Electricity, Gas, HotWater, ColdWater, Rent, OtherUtilities, \
-    User
-from sqlalchemy import asc
+    User, Report, Apartment
+from sqlalchemy import asc, desc
 
 
 @login_manager.user_loader
@@ -46,6 +46,7 @@ def sign_up():
 
 @app.route("/sign_in", methods=['GET', 'POST'])
 def sign_in():
+    db.create_all()
     if current_user.is_authenticated:
         return redirect(url_for('index'))
     form = SignInForm()
@@ -115,24 +116,37 @@ def reset_token(token):
 
 class GetFromData:
 
-    def __init__(self, service):
+    def __init__(self, service, apartment):
         self.service = service
+        self.apartment = apartment
 
     def getFrom(self):
-        last = self.service.query.order_by(asc(self.service.id)).all()[-1]
-        data_from = last.consumption_to
-        return data_from
+        try:
+            last = self.service.query.filter_by(apartment_ID=self.apartment).order_by(asc(self.service.id)).all()[-1]
+            data_from = last.consumption_to
+            return data_from
+        except IndexError:
+            return 0
 
-
-@app.route("/calculate_utilities", methods=['GET', 'POST'])
+@app.route("/select_apartment", methods=['GET', 'POST'])
 @login_required
-def calculate_utilities():
+def select_apartment():
+    apartment_form = ApartmentForm()
+    if apartment_form.validate_on_submit():
+        apartment = apartment_form.apartment.data
+        return redirect(url_for('calculate_utilities', apartment=apartment.id))
+    return render_template('select_apartment.html', apartment_form=apartment_form)
+
+
+@app.route("/calculate_utilities/<apartment>", methods=['GET', 'POST'])
+@login_required
+def calculate_utilities(apartment):
     db.create_all()
     form = UtilitiesForm()
-    electricity_from = GetFromData(Gas).getFrom()
-    gas_from = GetFromData(Gas).getFrom()
-    hot_water_from = GetFromData(HotWater).getFrom()
-    cold_water_from = GetFromData(ColdWater).getFrom()
+    electricity_from = GetFromData(Gas, apartment).getFrom()
+    gas_from = GetFromData(Gas, apartment).getFrom()
+    hot_water_from = GetFromData(HotWater, apartment).getFrom()
+    cold_water_from = GetFromData(ColdWater, apartment).getFrom()
     data_from_last = {
         "electricity_from": electricity_from,
         "gas_from": gas_from,
@@ -146,7 +160,7 @@ def calculate_utilities():
                                     request.form['electricity_from']),
                                 consumption_to=form.electricity_to.data,
                                 difference=request.form['electricity_dif'],
-                                apartment=form.apartment.data,
+                                apartment_ID=apartment,
                                 cost=form.electricity_cost.data,
                                 sum=request.form['electricity_sum'])
 
@@ -154,7 +168,7 @@ def calculate_utilities():
                          consumption_from=int(request.form['gas_from']),
                          consumption_to=form.gas_to.data,
                          difference=request.form['gas_dif'],
-                         apartment=form.apartment.data,
+                         apartment_ID=apartment,
                          cost=form.gas_cost.data,
                          sum=request.form[
                              'gas_sum'])
@@ -164,7 +178,7 @@ def calculate_utilities():
                                         request.form['hot_water_from']),
                                     consumption_to=form.hot_water_to.data,
                                     difference=request.form['hot_water_dif'],
-                                    apartment=form.apartment.data,
+                                    apartment_ID=apartment,
                                     cost=form.hot_water_cost.data,
                                     sum=request.form[
                                         'hot_water_sum'])
@@ -176,22 +190,24 @@ def calculate_utilities():
                                       consumption_to=form.cold_water_to.data,
                                       difference=request.form[
                                           'cold_water_dif'],
-                                      apartment=form.apartment.data,
+                                      apartment_ID=apartment,
                                       cost=form.cold_water_cost.data,
                                       sum=request.form[
                                           'cold_water_sum'])
             others_db = OtherUtilities(year=form.year.data,
                                        month=form.month.data,
-                                       apartment=form.apartment.data,
+                                       apartment_ID=apartment,
                                        cost=form.other_ut_cost.data,
                                        sum=request.form[
                                            'other_ut_sum'])
 
             rent_db = Rent(year=form.year.data, month=form.month.data,
-                           apartment=form.apartment.data,
+                           apartment_ID=apartment,
                            cost=form.rent_cost.data,
                            sum=request.form[
                                'rent_sum'])
+
+            report = Report(rent=rent_db, electricity=el_db, gas=gas_db, hot_water=hot_water_db, cold_water=cold_water_db, other_utilities=others_db, sum_total=request.form['total_sum'])
 
             db.session.add(el_db)
             db.session.add(gas_db)
@@ -199,11 +215,12 @@ def calculate_utilities():
             db.session.add(cold_water_db)
             db.session.add(others_db)
             db.session.add(rent_db)
+            db.session.add(report)
             db.session.commit()
             flash(
-                f'{form.apartment.data} {form.month.data}/{form.year.data} utilities data is successfully saved!',
+                f'Utilities data is successfully saved!',
                 'success')
-            return redirect("/")
+            return redirect("/select_apartment")
 
         electricity_dif = form.electricity_to.data - int(
             request.form['electricity_from'])
@@ -237,7 +254,37 @@ def calculate_utilities():
             'total_sum': total_sum
         }
         return render_template('calculate_utilities.html', form=form,
-                               data=data, data_from_last=data_from_last)
+                               data=data, data_from_last=data_from_last, apartment_selected=Apartment.query.filter_by(id=apartment).first())
 
     return render_template('calculate_utilities.html', form=form,
-                           data_from_last=data_from_last)
+                           data_from_last=data_from_last, apartment_selected=Apartment.query.filter_by(id=apartment).first())
+
+
+@app.route("/profile", methods=['GET', 'POST'])
+@login_required
+def profile():
+    form = ProfileUpdateForm()
+    if form.validate_on_submit():
+        current_user.name = form.name.data
+        current_user.email = form.email.data
+        db.session.commit()
+        flash('Your profile is updated!', 'success')
+        return redirect(url_for('profile'))
+    elif request.method == 'GET':
+        form.name.data = current_user.name
+        form.email.data = current_user.email
+    return render_template('profile.html', title='Account', form=form)
+
+@app.route('/generate_report', methods=['GET', 'POST'])
+@login_required
+def generate_report():
+    data = Report.query.all()
+    return render_template('reports.html', data=data)
+
+
+@app.route("/generate_report/<id>", methods=['GET', 'POST'])
+@login_required
+def generated_report(id):
+    report = Report.query.filter_by(id=id).first()
+    return render_template('generated_report.html', report=report)
+

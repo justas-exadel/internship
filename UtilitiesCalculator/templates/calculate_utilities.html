@@ -5,10 +5,9 @@
     <form method="POST" action="">
         {{ form.hidden_tag() }}
         <div class="date_apartment">
+            <h3>{{apartment_selected}}</h3>
             {{form.year(class="form-control form-control-md select_data")}}
             {{form.month(class="form-control form-control-md select_data")}}
-            {{form.apartment(class="form-control form-control-md
-            select_data")}}
         </div>
         <table class="table table-striped">
             <thead>

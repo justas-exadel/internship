@@ -180,8 +180,8 @@ class Rent(db.Model):
 class Report(db.Model):
     __tablename__ = 'REPORT'
     id = db.Column(db.Integer, primary_key=True)
-    renter_ID = db.Column(db.Integer, ForeignKey('RENTER.id'))
-    renter = relationship("Renter")
+    rent_ID = db.Column(db.Integer, ForeignKey('RENT.id'))
+    rent = relationship("Rent")
     electricity_ID = db.Column(db.Integer, ForeignKey('ELECTRICITY.id'))
     electricity = relationship("Electricity")
     gas_ID = db.Column(db.Integer, ForeignKey('GAS.id'))
@@ -193,14 +193,13 @@ class Report(db.Model):
     other_utilities_ID = db.Column(db.Integer,
                                    ForeignKey('OTHER_UTILITIES.id'))
     other_utilities = relationship("OtherUtilities")
-    rent_ID = db.Column(db.Integer, ForeignKey('RENT.id'))
-    rent = relationship("Rent")
     sum_total = db.Column('Total Eur', db.Float)
+    # status = db.Column('Status', db.String) #migrate
 
 
-class ManoModelView(ModelView):
+class MyModelView(ModelView):
     def is_accessible(self):
-        return current_user.is_authenticated and current_user.el_pastas == "el@pastas.lt"
+        return current_user.is_authenticated
 
 
 class MyView(BaseView):
