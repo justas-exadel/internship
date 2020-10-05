@@ -19,8 +19,18 @@
                 <td>{{item.rent.month}}</td>
                 <td>{{item.rent.apartment}}</td>
                 <td><a href="{{url_for('generated_report', id=item.id)}}">
-                    <button type="button" class="btn btn-success btn-sm">
+                    <button type="button" class="btn btn-primary btn-sm">
                         Generate
+                    </button>
+                </a>
+                            <a href="{{url_for('report_pdf', id=item.id)}}">
+                    <button type="button" class="btn btn-secondary btn-sm">
+                        PDF
+                    </button>
+                </a>
+                           <a href="{{url_for('send_report', id=item.id)}}">
+                    <button type="button" class="btn btn-success btn-sm">
+                        SEND
                     </button>
                 </a></td>
             </tr>

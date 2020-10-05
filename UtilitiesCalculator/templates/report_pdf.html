@@ -1,7 +1,11 @@
-{% extends "base.html" %}
-{% block content %}
-
-<center class="report-table"><h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Report</title>
+</head>
+<body>
+   <center class="report-table"><h2>
     {{report.rent.apartment}}</h2>
     <h4>{{report.rent.month}}/{{report.rent.year}}</h4>
     <br>
@@ -77,12 +81,6 @@
         </tr>
         </tbody>
     </table>
-            <a href="{{url_for('home')}}">
-        <button type="button" class="btn btn-info btn-lg">EDIT</button>
-    </a>
-    <a href="{{url_for('home')}}">
-        <button type="button" class="btn btn-primary btn-lg">SEND</button>
-    </a>
-
 </center>
-{% endblock content %}
+</body>
+</html>

@@ -1,4 +1,10 @@
-from flask import render_template, redirect, url_for, flash, request
+import os
+import re
+import shutil
+import requests
+import smtplib
+from email.message import EmailMessage
+from flask import render_template, redirect, url_for, flash, request, make_response
 from forms import SignInForm, SignUpForm, PasswordResetForm, UtilitiesForm, \
     RequestResetForm, ProfileUpdateForm, ApartmentForm
 from flask_paginate import Pagination, get_page_args
@@ -9,6 +15,7 @@ from main import send_reset_email
 from models import Electricity, Gas, HotWater, ColdWater, Rent, OtherUtilities, \
     User, Report, Apartment
 from sqlalchemy import asc, desc
+import pdfkit
 
 
 @login_manager.user_loader
@@ -282,9 +289,96 @@ def generate_report():
     return render_template('reports.html', data=data)
 
 
-@app.route("/generate_report/<id>", methods=['GET', 'POST'])
+@app.route("/generated_report/<id>", methods=['GET', 'POST'])
 @login_required
 def generated_report(id):
     report = Report.query.filter_by(id=id).first()
     return render_template('generated_report.html', report=report)
 
+
+@app.route('/report/<id>')
+@login_required
+def report_pdf(id):
+    name = "Generated Report"
+    report = Report.query.filter_by(id=id).first()
+    html = render_template('report_pdf.html', name=name, report=report)
+    pdf = pdfkit.from_string(html, False)
+    response = make_response(pdf)
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = 'attachement; filename=utilities_report.pdf'
+    return response
+
+def get_latest_pdf(path):
+    files = os.listdir(path)
+    latest = files[0]
+    for key in files:
+        if os.path.getctime(path + key) > os.path.getctime(path + latest):
+            latest = key
+    return latest
+
+def get_report(path, id):
+    files = os.listdir(path)
+    for key in files:
+        pattern = re.compile(f'{id}')
+        res = pattern.findall(key)
+        if res:
+            return key
+
+
+def downoad_pdf(id):
+    url = f'http://127.0.0.1:5555/report/{id}'
+    response = requests.get(url, stream=True)
+    latest_pdf = get_latest_pdf('C:/Users/GertrudaSK/Downloads/')
+    with open(f'C:/Users/GertrudaSK/Downloads/utilities_report.pdf', 'wb') as f:
+        f.write(response.content)
+    new_name = f'report-{id}.pdf'
+    os.chdir('C:\\Users\\GertrudaSK\\Downloads')
+    try:
+        os.rename(f'{latest_pdf}', new_name)
+    except FileExistsError:
+        pass
+    try:
+        shutil.move(f'C:\\Users\\GertrudaSK\\Downloads\\{new_name}', 'C:\\Users\\GertrudaSK\\Desktop\\Gert\\Intern Exercices\\exadel\\ma\\internship\\UtilitiesCalculator\\reports')
+    except shutil.Error:
+        pass
+    os.chdir('C:\\Users\\GertrudaSK\\Desktop\\Gert\\Intern Exercices\\exadel\\ma\\internship\\UtilitiesCalculator')
+
+
+@app.route('/send_report/<id>')
+@login_required
+def send_report(id):
+    downoad_pdf(id)
+
+    message = '''
+        Dear Sir/Madam,
+        Please find attached report about your rent and utilities month consumption.
+        Sincerely,
+        Landlord
+        '''
+    email = EmailMessage()
+    email['from'] = 'Apartment Rent'
+    email['to'] = 'viskoniekas@gmail.com'
+    email['subject'] = 'utilities consumption report'
+
+    email.set_content(message)
+    os.chdir(
+        'C:\\Users\\GertrudaSK\\Desktop\\Gert\\Intern Exercices\\exadel\\ma\\internship\\UtilitiesCalculator\\reports')
+    report = get_report('C:/Users/GertrudaSK/Desktop/Gert/Intern Exercices/exadel/ma/internship/UtilitiesCalculator/reports/', id)
+
+    with open(f'{report}', 'rb') as file:
+        content = file.read()
+        email.add_attachment(
+            content,
+            maintype='application/pdf',
+            subtype='pdf',
+            filename=f'{report}')
+
+    with smtplib.SMTP(host='smtp.gmail.com', port=587) as smtp:
+        smtp.ehlo()
+        smtp.starttls()
+        smtp.login('viskoniekas@gmail.com', 'XXX')
+        smtp.send_message(email)
+    flash(
+        f'Report is successfully sent!',
+        'success')
+    return redirect("/generate_report")
