@@ -77,10 +77,12 @@
             </tr>
             </tbody>
         </table>
+        {%if not edit%}
         {{ form.hidden_tag() }}
         {{ form.edit(class="btn btn-info btn-md") }}
         {{ form.pdf(class="btn btn-secondary btn-md") }}
         {{ form.send(class="btn btn-success btn-md") }}
+        {%endif%}
     </form>
 
 </center>

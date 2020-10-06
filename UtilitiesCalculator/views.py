@@ -11,7 +11,7 @@ from flask_login import current_user
 from __init__ import app, db, bcrypt, login_manager
 from models import Electricity, Gas, HotWater, ColdWater, Rent, OtherUtilities, \
     User, Report, Apartment
-from sqlalchemy import asc
+from sqlalchemy import asc, desc
 import pdfkit
 
 
@@ -280,7 +280,7 @@ def calculate_utilities(apartment):
             report = Report(rent=rent_db, electricity=el_db, gas=gas_db,
                             hot_water=hot_water_db, cold_water=cold_water_db,
                             other_utilities=others_db,
-                            sum_total=request.form['total_sum'])
+                            sum_total=request.form['total_sum'], sent_ID=2)
 
             data_to_db(el_db, gas_db, hot_water_db, cold_water_db, others_db,
                        rent_db, report)
@@ -328,25 +328,30 @@ def calculate_utilities(apartment):
 @app.route('/generate_report', methods=['GET', 'POST'])
 @login_required
 def generate_report():
-    data = Report.query.all()
+    data = Report.query.filter_by(sent_ID=2).all()
     return render_template('reports.html', data=data)
 
 
+@app.route('/reports_history', methods=['GET', 'POST'])
+@login_required
+def reports_history():
+    data = Report.query.order_by(desc(Report.id)).all()
+    return render_template('reports_history.html', data=data)
+
 @app.route("/generated_report/<id>", methods=['GET', 'POST'])
 @login_required
-def generated_report(id):
+def generated_report(id, edit=True):
     form = GenerateReportForm()
     report = Report.query.filter_by(id=id).first()
     if form.validate_on_submit():
         if 'edit' in request.form:
             return render_template('generated_report.html', report=report,
-                                   form=form)
+                                   form=form, edit=edit)
         if 'pdf' in request.form:
             return redirect(url_for('report_pdf', id=id))
         if 'send' in request.form:
-            return render_template('generated_report.html', report=report,
-                                   form=form)
-    return render_template('generated_report.html', report=report, form=form)
+            return redirect(url_for('send_report', id=id))
+    return render_template('generated_report.html', report=report, form=form, edit=edit)
 
 
 @app.route('/report/<id>')
@@ -365,11 +370,15 @@ def report_pdf(id):
 
 def get_latest_pdf(path):
     files = os.listdir(path)
+    latest = files[0]
     for key in files:
         if os.path.getctime(path + key) > os.path.getctime(path + latest):
             latest = key
     return latest
 
+def change_report_status(id):
+    Report.query.filter_by(id=id).update(dict(sent_ID=1))
+    db.session.commit()
 
 @app.route('/send_report/<id>')
 @login_required
@@ -388,7 +397,7 @@ def send_report(id):
     email.set_content(message)
     os.chdir(
         'C:\\Users\\GertrudaSK\\Downloads')
-    report = get_latest_pdf('C:/Users/GertrudaSK/Downloads/', id)
+    report = get_latest_pdf('C:/Users/GertrudaSK/Downloads/')
 
     with open(f'{report}', 'rb') as file:
         content = file.read()
@@ -403,6 +412,7 @@ def send_report(id):
         smtp.starttls()
         smtp.login('viskoniekas@gmail.com', 'XXX')
         smtp.send_message(email)
+        change_report_status(id)
     flash(
         f'Report is successfully sent!',
         'success')

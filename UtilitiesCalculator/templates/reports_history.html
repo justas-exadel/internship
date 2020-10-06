@@ -9,6 +9,7 @@
                 <th scope="col">Year</th>
                 <th scope="col">Month</th>
                 <th scope="col">Apartment</th>
+                 <th scope="col">Status</th>
                 <th></th>
             </tr>
             </thead>
@@ -18,27 +19,23 @@
                 <td>{{item.rent.year}}</td>
                 <td>{{item.rent.month}}</td>
                 <td>{{item.rent.apartment}}</td>
-                <td><a href="{{url_for('generated_report', id=item.id)}}">
+                {%if item.sent_ID == 1%}
+                  <td>Sent</td>
+                {%else%}
+                 <td>Not sent</td>
+                {%endif%}
+                <td><a href="{{url_for('generated_report', id=item.id, edit=False)}}">
                     <button type="button" class="btn btn-primary btn-sm">
-                        Generate
+                        Detail
                     </button>
                 </a>
-                            <a href="{{url_for('report_pdf', id=item.id)}}">
-                    <button type="button" class="btn btn-secondary btn-sm">
-                        PDF
-                    </button>
-                </a>
-                           <a href="{{url_for('send_report', id=item.id)}}">
-                    <button type="button" class="btn btn-success btn-sm">
-                        SEND
-                    </button>
-                </a></td>
+            </td>
             </tr>
             {%endfor%}
             </tbody>
         </table>
         {%else%}
-        <h3>All reports are sent!</h3>
+        <h3>There are no reports!</h3>
         {%endif%}
     </center>
 </div>

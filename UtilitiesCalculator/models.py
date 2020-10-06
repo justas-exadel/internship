@@ -51,6 +51,12 @@ class ApartmentStatus(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     status = db.Column(db.String, nullable=False)
 
+    def __init__(self, status):
+        self.status = status
+
+    def __repr__(self):
+        return  self.status
+
 
 class Apartment(db.Model):
     __tablename__ = 'APARTMENT'
@@ -59,8 +65,8 @@ class Apartment(db.Model):
     square_feet = db.Column('Square Feet (m3)', db.Float, nullable=True)
     house_ID = db.Column(db.Integer, ForeignKey('HOUSE.id'))
     house = relationship("House")
-    status_ID = db.Column(db.Integer, ForeignKey('APARTMENT_STATUS.id'))
-    status = relationship("ApartmentStatus")
+    status_ID = db.Column(db.Integer, ForeignKey('APARTMENT_STATUS.id')) #apartment_status_ID
+    status = relationship("ApartmentStatus") #apartment_status
 
     def __init__(self, address, square_feet):
         self.address = address
@@ -78,7 +84,7 @@ class Renter(db.Model):
     email = db.Column('Email', db.String, nullable=False)
     phone = db.Column('Phone', db.String, nullable=True)
     apartment_ID = db.Column(db.Integer, ForeignKey('APARTMENT.id'))
-    house = relationship("Apartment")
+    apartment = relationship("Apartment")
 
 
 class Service(db.Model):
@@ -195,13 +201,19 @@ class Report(db.Model):
                                    ForeignKey('OTHER_UTILITIES.id'))
     other_utilities = relationship("OtherUtilities")
     sum_total = db.Column('Total Eur', db.Float)
-    sent_ID = db.Column(db.Integer, ForeignKey('REPORT_STATUS.id'))
-    sent = relationship("ReportStatus")
+    sent_ID = db.Column(db.Integer, ForeignKey('REPORT_STATUS.id'))#report_status_id
+    sent = relationship("ReportStatus")#report_status
 
 class ReportStatus(db.Model):
     __tablename__ = 'REPORT_STATUS'
     id = db.Column(db.Integer, primary_key=True)
     status = db.Column(db.String, nullable=False)
+
+    def __init__(self, status):
+        self.status = status
+
+    def __repr__(self):
+        return  self.status
 
 
 
