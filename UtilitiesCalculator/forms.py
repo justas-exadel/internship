@@ -1,17 +1,14 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, BooleanField, IntegerField, \
-    SubmitField, PasswordField, FloatField, SelectField
-from wtforms.validators import DataRequired, ValidationError, EqualTo, Email, \
-    Optional
+    SubmitField, PasswordField, SelectField
+from wtforms.validators import DataRequired, ValidationError, EqualTo, Email
 from wtforms_sqlalchemy.fields import QuerySelectField
 from models import User, Apartment, ServiceCost, Service, Electricity
 from functools import partial
 from sqlalchemy import orm
 from datetime import date
 from flask_login import current_user
-from flask_wtf import Form
-from wtforms import SelectMultipleField
-from wtforms.widgets import ListWidget, CheckboxInput
+
 
 class SignInForm(FlaskForm):
     email = StringField('Email', [DataRequired()])
@@ -43,7 +40,7 @@ class SignUpForm(FlaskForm):
     name = StringField('Name', [DataRequired()])
     email = StringField('Email', [DataRequired()])
     password = PasswordField('Password', [DataRequired()])
-    repeated_psw = PasswordField("Repeat password",  # doesn't validate
+    repeated_psw = PasswordField("Repeat password",
                                  [EqualTo('password',
                                           "Passwords must match!")])
     submit = SubmitField('Submit')
@@ -53,6 +50,7 @@ class SignUpForm(FlaskForm):
         if users:
             raise ValidationError('User can be only one!')
         return True
+
 
 class ProfileUpdateForm(FlaskForm):
     name = StringField('Name', [DataRequired()])
@@ -234,6 +232,7 @@ class UtilitiesForm(FlaskForm):
     submit = SubmitField('Calculate')
     confirm = SubmitField('Confirm')
 
+
 class ApartmentForm(FlaskForm):
     apartment = QuerySelectField(
         'Apartment',
@@ -242,3 +241,8 @@ class ApartmentForm(FlaskForm):
     )
     submit = SubmitField('Select')
 
+
+class GenerateReportForm(FlaskForm):
+    edit = SubmitField('Edit')
+    pdf = SubmitField('PDF')
+    send = SubmitField('SEND')

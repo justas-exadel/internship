@@ -1,12 +1,12 @@
-from flask_admin.contrib.sqla import ModelView
+# from flask_admin.contrib.sqla import ModelView
 from sqlalchemy.orm import relationship
 from flask_login import UserMixin
 from sqlalchemy import Column, Integer, String, ForeignKey, Float
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-from flask_login import LoginManager, current_user
+# from flask_login import LoginManager, current_user
 from __init__ import db, app, admin
-from flask_admin import BaseView, expose
-from flask import redirect, url_for
+# from flask_admin import BaseView, expose
+# from flask import redirect, url_for
 
 
 class User(db.Model, UserMixin):
@@ -39,12 +39,28 @@ class House(db.Model):
     apartments_count = db.Column('Apartments Total', db.Integer,
                                  nullable=False)
 
+    def __init__(self, address, apartments_count):
+        self.address = address
+        self.apartments_count = apartments_count
+
+    def __repr__(self):
+        return  self.address
+
+class ApartmentStatus(db.Model):
+    __tablename__ = 'APARTMENT_STATUS'
+    id = db.Column(db.Integer, primary_key=True)
+    status = db.Column(db.String, nullable=False)
+
 
 class Apartment(db.Model):
     __tablename__ = 'APARTMENT'
     id = db.Column(db.Integer, primary_key=True)
     address = db.Column('Address', db.String, nullable=False)
     square_feet = db.Column('Square Feet (m3)', db.Float, nullable=True)
+    house_ID = db.Column(db.Integer, ForeignKey('HOUSE.id'))
+    house = relationship("House")
+    status_ID = db.Column(db.Integer, ForeignKey('APARTMENT_STATUS.id'))
+    status = relationship("ApartmentStatus")
 
     def __init__(self, address, square_feet):
         self.address = address
@@ -61,6 +77,8 @@ class Renter(db.Model):
     surname = db.Column('Surname', db.String, nullable=False)
     email = db.Column('Email', db.String, nullable=False)
     phone = db.Column('Phone', db.String, nullable=True)
+    apartment_ID = db.Column(db.Integer, ForeignKey('APARTMENT.id'))
+    house = relationship("Apartment")
 
 
 class Service(db.Model):
@@ -92,89 +110,72 @@ class ServiceCost(db.Model):
     def __str__(self):
         return f" {self.name} - {self.cost} Eur"
 
+class Utility(db.Model):
+    __abstract__ = True
+    year = db.Column('Year', db.Integer, nullable=False)
+    month = db.Column('Month', db.Integer, nullable=False)
+    sum = db.Column('Sum', db.Float)
 
-class Electricity(db.Model):
+
+class Consuption(db.Model):
+    __abstract__ = True
+    consumption_from = db.Column('From', db.Integer)
+    consumption_to = db.Column('To', db.Integer)
+    difference = db.Column('Difference', db.Integer)
+
+
+class Electricity(Utility, Consuption):
     __tablename__ = 'ELECTRICITY'
     id = db.Column(db.Integer, primary_key=True)
-    year = db.Column('Year', db.Integer)
-    month = db.Column('Month', db.Integer)
     apartment_ID = db.Column(db.Integer, ForeignKey('APARTMENT.id'))
     apartment = relationship("Apartment")
-    consumption_from = db.Column('From', db.Integer)
-    consumption_to = db.Column('To', db.Integer)
-    difference = db.Column('Difference', db.Integer)
     cost_id = db.Column(db.Integer, ForeignKey('SERVICE_COST.id'))
     cost = relationship("ServiceCost")
-    sum = db.Column('Sum', db.Float)
 
 
-class Gas(db.Model):
+class Gas(Utility, Consuption):
     __tablename__ = 'GAS'
     id = db.Column(db.Integer, primary_key=True)
-    year = db.Column('Year', db.Integer)
-    month = db.Column('Month', db.Integer)
     apartment_ID = db.Column(db.Integer, ForeignKey('APARTMENT.id'))
     apartment = relationship("Apartment")
-    consumption_from = db.Column('From', db.Integer)
-    consumption_to = db.Column('To', db.Integer)
-    difference = db.Column('Difference', db.Integer)
     cost_id = db.Column(db.Integer, ForeignKey('SERVICE_COST.id'))
     cost = relationship("ServiceCost")
-    sum = db.Column('Sum', db.Float)
 
 
-class HotWater(db.Model):
+class HotWater(Utility, Consuption):
     __tablename__ = 'HOT_WATER'
     id = db.Column(db.Integer, primary_key=True)
-    year = db.Column('Year', db.Integer)
-    month = db.Column('Month', db.Integer)
     apartment_ID = db.Column(db.Integer, ForeignKey('APARTMENT.id'))
     apartment = relationship("Apartment")
-    consumption_from = db.Column('From', db.Integer)
-    consumption_to = db.Column('To', db.Integer)
-    difference = db.Column('Difference', db.Integer)
     cost_id = db.Column(db.Integer, ForeignKey('SERVICE_COST.id'))
     cost = relationship("ServiceCost")
-    sum = db.Column('Sum', db.Float)
 
 
-class ColdWater(db.Model):
+class ColdWater(Utility, Consuption):
     __tablename__ = 'COLD_WATER'
     id = db.Column(db.Integer, primary_key=True)
-    year = db.Column('Year', db.Integer)
-    month = db.Column('Month', db.Integer)
     apartment_ID = db.Column(db.Integer, ForeignKey('APARTMENT.id'))
     apartment = relationship("Apartment")
-    consumption_from = db.Column('From', db.Integer)
-    consumption_to = db.Column('To', db.Integer)
-    difference = db.Column('Difference', db.Integer)
     cost_id = db.Column(db.Integer, ForeignKey('SERVICE_COST.id'))
     cost = relationship("ServiceCost")
-    sum = db.Column('Sum', db.Float)
 
 
-class OtherUtilities(db.Model):
+class OtherUtilities(Utility):
     __tablename__ = 'OTHER_UTILITIES'
     id = db.Column(db.Integer, primary_key=True)
-    year = db.Column('Year', db.Integer)
-    month = db.Column('Month', db.Integer)
     apartment_ID = db.Column(db.Integer, ForeignKey('APARTMENT.id'))
     apartment = relationship("Apartment")
     cost_id = db.Column(db.Integer, ForeignKey('SERVICE_COST.id'))
     cost = relationship("ServiceCost")
-    sum = db.Column('Sum', db.Float)
 
 
-class Rent(db.Model):
+class Rent(Utility):
     __tablename__ = 'RENT'
     id = db.Column(db.Integer, primary_key=True)
-    year = db.Column('Year', db.Integer)
-    month = db.Column('Month', db.Integer)
     apartment_ID = db.Column(db.Integer, ForeignKey('APARTMENT.id'))
     apartment = relationship("Apartment")
     cost_id = db.Column(db.Integer, ForeignKey('SERVICE_COST.id'))
     cost = relationship("ServiceCost")
-    sum = db.Column('Sum', db.Float)
 
 
 class Report(db.Model):
@@ -194,31 +195,13 @@ class Report(db.Model):
                                    ForeignKey('OTHER_UTILITIES.id'))
     other_utilities = relationship("OtherUtilities")
     sum_total = db.Column('Total Eur', db.Float)
-    # status = db.Column('Status', db.String) #migrate
+    sent_ID = db.Column(db.Integer, ForeignKey('REPORT_STATUS.id'))
+    sent = relationship("ReportStatus")
+
+class ReportStatus(db.Model):
+    __tablename__ = 'REPORT_STATUS'
+    id = db.Column(db.Integer, primary_key=True)
+    status = db.Column(db.String, nullable=False)
 
 
-class MyModelView(ModelView):
-    def is_accessible(self):
-        return current_user.is_authenticated
 
-
-class MyView(BaseView):
-    @expose('/')
-    def index(self):
-        return redirect(url_for('home'))
-
-
-admin.add_view(MyView(name='Back to Page'))
-admin.add_view(ModelView(User, db.session))
-admin.add_view(ModelView(House, db.session))
-admin.add_view(ModelView(Apartment, db.session))
-admin.add_view(ModelView(Renter, db.session))
-admin.add_view(ModelView(Service, db.session))
-admin.add_view(ModelView(ServiceCost, db.session))
-admin.add_view(ModelView(Electricity, db.session))
-admin.add_view(ModelView(Gas, db.session))
-admin.add_view(ModelView(HotWater, db.session))
-admin.add_view(ModelView(ColdWater, db.session))
-admin.add_view(ModelView(OtherUtilities, db.session))
-admin.add_view(ModelView(Rent, db.session))
-admin.add_view(ModelView(Report, db.session))

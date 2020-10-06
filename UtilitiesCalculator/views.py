@@ -1,20 +1,17 @@
 import os
-import re
-import shutil
-import requests
 import smtplib
 from email.message import EmailMessage
-from flask import render_template, redirect, url_for, flash, request, make_response
+from flask import render_template, redirect, url_for, flash, request, \
+    make_response
 from forms import SignInForm, SignUpForm, PasswordResetForm, UtilitiesForm, \
-    RequestResetForm, ProfileUpdateForm, ApartmentForm
+    RequestResetForm, ProfileUpdateForm, ApartmentForm, GenerateReportForm
 from flask_paginate import Pagination, get_page_args
 from flask_login import logout_user, login_user, login_required
 from flask_login import current_user
 from __init__ import app, db, bcrypt, login_manager
-from main import send_reset_email
 from models import Electricity, Gas, HotWater, ColdWater, Rent, OtherUtilities, \
     User, Report, Apartment
-from sqlalchemy import asc, desc
+from sqlalchemy import asc
 import pdfkit
 
 
@@ -81,6 +78,39 @@ def sign_out():
     logout_user()
     return render_template('index.html')
 
+@app.route("/profile", methods=['GET', 'POST'])
+@login_required
+def profile():
+    form = ProfileUpdateForm()
+    if form.validate_on_submit():
+        current_user.name = form.name.data
+        current_user.email = form.email.data
+        db.session.commit()
+        flash('Your profile is updated!', 'success')
+        return redirect(url_for('profile'))
+    elif request.method == 'GET':
+        form.name.data = current_user.name
+        form.email.data = current_user.email
+    return render_template('profile.html', title='Account', form=form)
+
+def send_reset_email(user):
+    token = user.get_reset_token()
+    message = f'''
+    Click the link below if you want to reset your password:
+    {url_for('reset_token', token=token, _external=True)}     
+     '''
+    email = EmailMessage()
+    email['from'] = 'Name Surname'
+    email['to'] = [user.email]
+    email['subject'] = 'Reset Password'
+
+    email.set_content(message)
+
+    with smtplib.SMTP(host='smtp.gmail.com', port=587) as smtp:
+        smtp.ehlo()
+        smtp.starttls()
+        smtp.login(EMAIL_HOST_USER, EMAIL_HOST_PASSWORD)
+        smtp.send_message(email)
 
 @app.route("/reset_password", methods=['GET', 'POST'])
 def reset_request():
@@ -121,20 +151,6 @@ def reset_token(token):
                            form=form)
 
 
-class GetFromData:
-
-    def __init__(self, service, apartment):
-        self.service = service
-        self.apartment = apartment
-
-    def getFrom(self):
-        try:
-            last = self.service.query.filter_by(apartment_ID=self.apartment).order_by(asc(self.service.id)).all()[-1]
-            data_from = last.consumption_to
-            return data_from
-        except IndexError:
-            return 0
-
 @app.route("/select_apartment", methods=['GET', 'POST'])
 @login_required
 def select_apartment():
@@ -142,14 +158,33 @@ def select_apartment():
     if apartment_form.validate_on_submit():
         apartment = apartment_form.apartment.data
         return redirect(url_for('calculate_utilities', apartment=apartment.id))
-    return render_template('select_apartment.html', apartment_form=apartment_form)
+    return render_template('select_apartment.html',
+                           apartment_form=apartment_form)
 
 
-@app.route("/calculate_utilities/<apartment>", methods=['GET', 'POST'])
-@login_required
-def calculate_utilities(apartment):
-    db.create_all()
-    form = UtilitiesForm()
+class GetFromData:
+    def __init__(self, service, apartment):
+        self.service = service
+        self.apartment = apartment
+
+    def getFrom(self):
+        try:
+            last = \
+            self.service.query.filter_by(apartment_ID=self.apartment).order_by(
+                asc(self.service.id)).all()[-1]
+            data_from = last.consumption_to
+            return data_from
+        except IndexError:
+            return 0
+
+
+def data_to_db(*data):
+    for ut in data:
+        db.session.add(ut)
+    db.session.commit()
+
+
+def calculate_from(apartment):
     electricity_from = GetFromData(Gas, apartment).getFrom()
     gas_from = GetFromData(Gas, apartment).getFrom()
     hot_water_from = GetFromData(HotWater, apartment).getFrom()
@@ -160,6 +195,34 @@ def calculate_utilities(apartment):
         "hot_water_from": hot_water_from,
         "cold_water_from": cold_water_from
     }
+    return data_from_last
+
+
+def result_data(electricity_dif, gas_dif, cold_water_dif, hot_water_dif,
+                electricity_sum, gas_sum, cold_water_sum, hot_water_sum,
+                other_ut_sum, rent_sum, total_sum):
+    data = {
+        'electricity_dif': electricity_dif,
+        'gas_dif': gas_dif,
+        'cold_water_dif': cold_water_dif,
+        'hot_water_dif': hot_water_dif,
+        'electricity_sum': electricity_sum,
+        'gas_sum': gas_sum,
+        'cold_water_sum': cold_water_sum,
+        'hot_water_sum': hot_water_sum,
+        'other_ut_sum': other_ut_sum,
+        'rent_sum': rent_sum,
+        'total_sum': total_sum
+    }
+    return data
+
+
+@app.route("/calculate_utilities/<apartment>", methods=['GET', 'POST'])
+@login_required
+def calculate_utilities(apartment):
+    db.create_all()
+    form = UtilitiesForm()
+    data_from_last = calculate_from(apartment)
     if form.validate_on_submit():
         if 'confirm' in request.form:
             el_db = Electricity(year=form.year.data, month=form.month.data,
@@ -214,16 +277,14 @@ def calculate_utilities(apartment):
                            sum=request.form[
                                'rent_sum'])
 
-            report = Report(rent=rent_db, electricity=el_db, gas=gas_db, hot_water=hot_water_db, cold_water=cold_water_db, other_utilities=others_db, sum_total=request.form['total_sum'])
+            report = Report(rent=rent_db, electricity=el_db, gas=gas_db,
+                            hot_water=hot_water_db, cold_water=cold_water_db,
+                            other_utilities=others_db,
+                            sum_total=request.form['total_sum'])
 
-            db.session.add(el_db)
-            db.session.add(gas_db)
-            db.session.add(hot_water_db)
-            db.session.add(cold_water_db)
-            db.session.add(others_db)
-            db.session.add(rent_db)
-            db.session.add(report)
-            db.session.commit()
+            data_to_db(el_db, gas_db, hot_water_db, cold_water_db, others_db,
+                       rent_db, report)
+
             flash(
                 f'Utilities data is successfully saved!',
                 'success')
@@ -247,40 +308,22 @@ def calculate_utilities(apartment):
         rent_sum = form.rent_cost.data.cost
         total_sum = electricity_sum + gas_sum + cold_water_sum + hot_water_sum + other_ut_sum + rent_sum
 
-        data = {
-            'electricity_dif': electricity_dif,
-            'gas_dif': gas_dif,
-            'cold_water_dif': cold_water_dif,
-            'hot_water_dif': hot_water_dif,
-            'electricity_sum': electricity_sum,
-            'gas_sum': gas_sum,
-            'cold_water_sum': cold_water_sum,
-            'hot_water_sum': hot_water_sum,
-            'other_ut_sum': other_ut_sum,
-            'rent_sum': rent_sum,
-            'total_sum': total_sum
-        }
+        data = result_data(electricity_dif, gas_dif, cold_water_dif,
+                           hot_water_dif, electricity_sum, gas_sum,
+                           cold_water_sum, hot_water_sum, other_ut_sum,
+                           rent_sum, total_sum)
+
         return render_template('calculate_utilities.html', form=form,
-                               data=data, data_from_last=data_from_last, apartment_selected=Apartment.query.filter_by(id=apartment).first())
+                               data=data, data_from_last=data_from_last,
+                               apartment_selected=Apartment.query.filter_by(
+                                   id=apartment).first())
 
     return render_template('calculate_utilities.html', form=form,
-                           data_from_last=data_from_last, apartment_selected=Apartment.query.filter_by(id=apartment).first())
+                           data_from_last=data_from_last,
+                           apartment_selected=Apartment.query.filter_by(
+                               id=apartment).first())
 
 
-@app.route("/profile", methods=['GET', 'POST'])
-@login_required
-def profile():
-    form = ProfileUpdateForm()
-    if form.validate_on_submit():
-        current_user.name = form.name.data
-        current_user.email = form.email.data
-        db.session.commit()
-        flash('Your profile is updated!', 'success')
-        return redirect(url_for('profile'))
-    elif request.method == 'GET':
-        form.name.data = current_user.name
-        form.email.data = current_user.email
-    return render_template('profile.html', title='Account', form=form)
 
 @app.route('/generate_report', methods=['GET', 'POST'])
 @login_required
@@ -292,8 +335,18 @@ def generate_report():
 @app.route("/generated_report/<id>", methods=['GET', 'POST'])
 @login_required
 def generated_report(id):
+    form = GenerateReportForm()
     report = Report.query.filter_by(id=id).first()
-    return render_template('generated_report.html', report=report)
+    if form.validate_on_submit():
+        if 'edit' in request.form:
+            return render_template('generated_report.html', report=report,
+                                   form=form)
+        if 'pdf' in request.form:
+            return redirect(url_for('report_pdf', id=id))
+        if 'send' in request.form:
+            return render_template('generated_report.html', report=report,
+                                   form=form)
+    return render_template('generated_report.html', report=report, form=form)
 
 
 @app.route('/report/<id>')
@@ -305,50 +358,22 @@ def report_pdf(id):
     pdf = pdfkit.from_string(html, False)
     response = make_response(pdf)
     response.headers['Content-Type'] = 'application/pdf'
-    response.headers['Content-Disposition'] = 'attachement; filename=utilities_report.pdf'
+    response.headers[
+        'Content-Disposition'] = f'attachement; filename=utilities_report_{id}.pdf'
     return response
+
 
 def get_latest_pdf(path):
     files = os.listdir(path)
-    latest = files[0]
     for key in files:
         if os.path.getctime(path + key) > os.path.getctime(path + latest):
             latest = key
     return latest
 
-def get_report(path, id):
-    files = os.listdir(path)
-    for key in files:
-        pattern = re.compile(f'{id}')
-        res = pattern.findall(key)
-        if res:
-            return key
-
-
-def downoad_pdf(id):
-    url = f'http://127.0.0.1:5555/report/{id}'
-    response = requests.get(url, stream=True)
-    latest_pdf = get_latest_pdf('C:/Users/GertrudaSK/Downloads/')
-    with open(f'C:/Users/GertrudaSK/Downloads/utilities_report.pdf', 'wb') as f:
-        f.write(response.content)
-    new_name = f'report-{id}.pdf'
-    os.chdir('C:\\Users\\GertrudaSK\\Downloads')
-    try:
-        os.rename(f'{latest_pdf}', new_name)
-    except FileExistsError:
-        pass
-    try:
-        shutil.move(f'C:\\Users\\GertrudaSK\\Downloads\\{new_name}', 'C:\\Users\\GertrudaSK\\Desktop\\Gert\\Intern Exercices\\exadel\\ma\\internship\\UtilitiesCalculator\\reports')
-    except shutil.Error:
-        pass
-    os.chdir('C:\\Users\\GertrudaSK\\Desktop\\Gert\\Intern Exercices\\exadel\\ma\\internship\\UtilitiesCalculator')
-
 
 @app.route('/send_report/<id>')
 @login_required
 def send_report(id):
-    downoad_pdf(id)
-
     message = '''
         Dear Sir/Madam,
         Please find attached report about your rent and utilities month consumption.
@@ -362,8 +387,8 @@ def send_report(id):
 
     email.set_content(message)
     os.chdir(
-        'C:\\Users\\GertrudaSK\\Desktop\\Gert\\Intern Exercices\\exadel\\ma\\internship\\UtilitiesCalculator\\reports')
-    report = get_report('C:/Users/GertrudaSK/Desktop/Gert/Intern Exercices/exadel/ma/internship/UtilitiesCalculator/reports/', id)
+        'C:\\Users\\GertrudaSK\\Downloads')
+    report = get_latest_pdf('C:/Users/GertrudaSK/Downloads/', id)
 
     with open(f'{report}', 'rb') as file:
         content = file.read()
