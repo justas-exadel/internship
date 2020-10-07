@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container">
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <div class="date_apartment">
+            <h3> {{report.rent.apartment}}</h3>
+           <h4>
+               {{report.rent.month}}/{{report.rent.year}}</h4>
+
+        </div>        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th scope="col">Utility</th>
+                <th scope="col">To</th>
+                <th scope="col">From</th>
+                <th scope="col">Difference</th>
+                <th scope="col">Cost</th>
+                <th scope="col">Sum</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <th scope="row">Electricity</th>
+                <td>{{form.electricity_to(class="form_input")}}</td>
+                <td><input class="form_input" type="text"
+                           name="electricity_from"
+                            value="{{report.electricity.consumption_from}}" disabled>
+                </td>
+                <td><input class="form_input" name="electricity_dif"
+                           type="text"
+                            value="{%if data%}{{data.get('electricity_dif')}}{%else%}{{report.electricity.difference}}{%endif%}">
+                </td>
+                <td>{{form.electricity_cost(class="form_input")}}</td>
+                <td><input class="form_input" name="electricity_sum"
+                           type="text"
+                           value="{%if data%}{{data.get('electricity_sum')}}{%else%}{{report.electricity.sum}}{%endif%}">
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">Gas</th>
+                <td>{{form.gas_to(class="form_input")}}</td>
+                <td><input class="form_input" type="text" name="gas_from"
+                           value="{{report.gas.consumption_from}}" disabled>
+                </td>
+                <td><input class="form_input" name="gas_dif" type="text"
+                           value="{%if data%}{{data.get('gas_dif')}}{%else%}{{report.gas.difference}}{%endif%}">
+                </td>
+                <td>{{form.gas_cost(class="form_input")}}</td>
+                <td><input class="form_input" name="gas_sum" type="text"
+                           value="{%if data%}{{data.get('gas_sum')}}{%else%}{{report.gas.sum}}{%endif%}">
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">Cold Water</th>
+                <td>{{form.cold_water_to(class="form_input")}}</td>
+                <td><input class="form_input" type="text"
+                           name="cold_water_from"
+                            value="{{report.cold_water.consumption_from}}" disabled>
+                <td><input class="form_input" name="cold_water_dif" type="text"
+                           value="{%if data%}{{data.get('cold_water_dif')}}{%else%}{{report.cold_water.difference}}{%endif%}">
+                </td>
+                <td>{{form.cold_water_cost(class="form_input")}}</td>
+                <td><input class="form_input" name="cold_water_sum" type="text"
+                           value="{%if data%}{{data.get('cold_water_sum')}}{%else%}{{report.cold_water.sum}}{%endif%}">
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">Hot Water</th>
+                <td>{{form.hot_water_to(class="form_input")}}</td>
+                <td><input class="form_input" type="text" name="hot_water_from"
+                            value="{{report.hot_water.consumption_from}}" disabled>
+                </td>
+                <td><input class="form_input" name="hot_water_dif" type="text"
+                           value="{%if data%}{{data.get('hot_water_dif')}}{%else%}{{report.hot_water.difference}}{%endif%}">
+                </td>
+                <td>{{form.hot_water_cost(class="form_input")}}</td>
+                <td><input class="form_input" name="hot_water_sum" type="text"
+                           value="{%if data%}{{data.get('hot_water_sum')}}{%else%}{{report.hot_water.sum}}{%endif%}">
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">Other Utilities</th>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>{{form.other_ut_cost(class="form_input")}}</td>
+                <td><input class="form_input" name="other_ut_sum" type="text"
+                           value="{%if data%}{{data.get('other_ut_sum')}}{%else%}{{report.other_utilities.sum}}{%endif%}">
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">Rent</th>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>{{form.rent_cost(class="form_input")}}</td>
+                <td><input class="form_input" name="rent_sum" type="text"
+                           value="{%if data%}{{data.get('rent_sum')}}{%else%}{{report.rent.sum}}{%endif%}">
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">Total</th>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td><input class="form_input" name="total_sum" type="text"
+                           value="{%if data%}{{data.get('total_sum')}}{%else%}{{report.sum_total}}{%endif%}">
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <section class="buttons">
+
+            <div class="form-group">
+                {{ form.confirm(class="btn btn-success btn-lg") }}
+            </div>
+            <div class="form-group">
+                {{ form.submit(class="btn btn-primary btn-lg") }}
+            </div>
+        </section>
+    </form>
+</div>
+
+{% endblock content %}

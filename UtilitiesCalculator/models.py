@@ -1,12 +1,9 @@
-# from flask_admin.contrib.sqla import ModelView
 from sqlalchemy.orm import relationship
 from flask_login import UserMixin
 from sqlalchemy import Column, Integer, String, ForeignKey, Float
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-# from flask_login import LoginManager, current_user
 from __init__ import db, app, admin
-# from flask_admin import BaseView, expose
-# from flask import redirect, url_for
+
 
 
 class User(db.Model, UserMixin):
@@ -188,21 +185,22 @@ class Report(db.Model):
     __tablename__ = 'REPORT'
     id = db.Column(db.Integer, primary_key=True)
     rent_ID = db.Column(db.Integer, ForeignKey('RENT.id'))
-    rent = relationship("Rent")
+    rent = relationship("Rent", single_parent=True, cascade="all, delete-orphan")
     electricity_ID = db.Column(db.Integer, ForeignKey('ELECTRICITY.id'))
-    electricity = relationship("Electricity")
+    electricity = relationship("Electricity", single_parent=True, cascade="all, delete-orphan")
     gas_ID = db.Column(db.Integer, ForeignKey('GAS.id'))
-    gas = relationship("Gas")
+    gas = relationship("Gas", single_parent=True, cascade="all, delete-orphan")
     hot_water_ID = db.Column(db.Integer, ForeignKey('HOT_WATER.id'))
-    hot_water = relationship("HotWater")
+    hot_water = relationship("HotWater", single_parent=True, cascade="all, delete-orphan")
     cold_water_ID = db.Column(db.Integer, ForeignKey('COLD_WATER.id'))
-    cold_water = relationship("ColdWater")
+    cold_water = relationship("ColdWater", single_parent=True, cascade="all, delete-orphan")
     other_utilities_ID = db.Column(db.Integer,
                                    ForeignKey('OTHER_UTILITIES.id'))
-    other_utilities = relationship("OtherUtilities")
+    other_utilities = relationship("OtherUtilities", single_parent=True, cascade="all, delete-orphan")
     sum_total = db.Column('Total Eur', db.Float)
-    sent_ID = db.Column(db.Integer, ForeignKey('REPORT_STATUS.id'))#report_status_id
-    sent = relationship("ReportStatus")#report_status
+    sent_ID = db.Column(db.Integer, ForeignKey('REPORT_STATUS.id'))
+    sent = relationship("ReportStatus")
+
 
 class ReportStatus(db.Model):
     __tablename__ = 'REPORT_STATUS'

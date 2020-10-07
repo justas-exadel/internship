@@ -10,6 +10,7 @@ from flask_admin.contrib.sqla import ModelView
 from flask_admin import BaseView, expose
 from flask import redirect, url_for
 from flask_login import LoginManager, current_user
+# from flask_migrate import Migrate
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -24,6 +25,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir,
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 db.metadata.clear()
+
+# Migrate(app, db)
 
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)

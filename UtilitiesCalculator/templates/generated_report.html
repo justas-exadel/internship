@@ -6,6 +6,7 @@
     <h4>{{report.rent.month}}/{{report.rent.year}}</h4>
     <br>
     <form method="POST" action="">
+        {{ form.hidden_tag() }}
         <table class="table">
             <thead>
             <tr>
@@ -34,6 +35,14 @@
                 <td>{{report.gas.cost.cost}}</td>
                 <td>{{report.gas.sum}}</td>
             </tr>
+                     <tr>
+                <td>{{report.cold_water.cost.service}}</td>
+                <td>{{report.cold_water.consumption_from}}</td>
+                <td>{{report.cold_water.consumption_to}}</td>
+                <td>{{report.cold_water.difference}}</td>
+                <td>{{report.cold_water.cost.cost}}</td>
+                <td>{{report.cold_water.sum}}</td>
+            </tr>
             <tr>
                 <td>{{report.hot_water.cost.service}}</td>
                 <td>{{report.hot_water.consumption_from}}</td>
@@ -43,15 +52,6 @@
                 <td>{{report.hot_water.sum}}</td>
             </tr>
             <tr>
-                <td>{{report.cold_water.cost.service}}</td>
-                <td>{{report.cold_water.consumption_from}}</td>
-                <td>{{report.cold_water.consumption_to}}</td>
-                <td>{{report.cold_water.difference}}</td>
-                <td>{{report.cold_water.cost.cost}}</td>
-                <td>{{report.cold_water.sum}}</td>
-            </tr>
-            <tr>
-
                 <td>{{report.other_utilities.cost.service}}</td>
                 <td></td>
                 <td></td>
@@ -77,10 +77,10 @@
             </tr>
             </tbody>
         </table>
-        {%if not edit%}
-        {{ form.hidden_tag() }}
-        {{ form.edit(class="btn btn-info btn-md") }}
-        {{ form.pdf(class="btn btn-secondary btn-md") }}
+         {{ form.pdf(class="btn btn-secondary btn-md") }}
+         {%if report.sent_ID == 2%}
+         {{ form.edit(class="btn btn-info btn-md") }}
+        {{ form.delete(class="btn btn-danger btn-md") }}
         {{ form.send(class="btn btn-success btn-md") }}
         {%endif%}
     </form>

@@ -24,7 +24,7 @@
                 {%else%}
                  <td>Not sent</td>
                 {%endif%}
-                <td><a href="{{url_for('generated_report', id=item.id, edit=False)}}">
+                <td><a href="{{url_for('generated_report', id=item.id)}}">
                     <button type="button" class="btn btn-primary btn-sm">
                         Detail
                     </button>

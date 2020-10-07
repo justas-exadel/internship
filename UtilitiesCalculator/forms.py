@@ -244,5 +244,6 @@ class ApartmentForm(FlaskForm):
 
 class GenerateReportForm(FlaskForm):
     edit = SubmitField('Edit')
+    delete = SubmitField('Delete')
     pdf = SubmitField('PDF')
     send = SubmitField('SEND')
