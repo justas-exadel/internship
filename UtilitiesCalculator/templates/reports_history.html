@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-{%if data%}
+{%if data.items%}
 <div class="container reports">
     <center>
         <table class="table table-hover">
@@ -9,31 +9,54 @@
                 <th scope="col">Year</th>
                 <th scope="col">Month</th>
                 <th scope="col">Apartment</th>
-                 <th scope="col">Status</th>
+                <th scope="col">Status</th>
                 <th></th>
             </tr>
             </thead>
             <tbody>
-            {%for item in data%}
+            {%for item in data.items%}
             <tr>
                 <td>{{item.rent.year}}</td>
                 <td>{{item.rent.month}}</td>
                 <td>{{item.rent.apartment}}</td>
                 {%if item.sent_ID == 1%}
-                  <td>Sent</td>
+                <td>Sent</td>
+                <td><a href="{{url_for('generated_report', id=item.id)}}">
+                    <button type="button" class="btn btn-info btn-sm">
+                        Detail
+                    </button>
+                </a>
+                </td>
                 {%else%}
-                 <td>Not sent</td>
-                {%endif%}
+                <td>Not sent</td>
                 <td><a href="{{url_for('generated_report', id=item.id)}}">
                     <button type="button" class="btn btn-primary btn-sm">
                         Detail
                     </button>
                 </a>
-            </td>
+                </td>
+                {%endif%}
             </tr>
             {%endfor%}
             </tbody>
         </table>
+        <hr>
+        {% for page_num in data.iter_pages(left_edge=1, right_edge=1,
+        left_current=1, right_current=2) %}
+        {% if page_num %}
+        {% if data.page == page_num %}
+        <a class="btn btn-info mb-4"
+           href="{{ url_for('reports_history', page=page_num) }}">{{ page_num
+            }}</a>
+        {% else %}
+        <a class="btn btn-outline-info mb-4"
+           href="{{ url_for('reports_history', page=page_num) }}">{{ page_num
+            }}</a>
+        {% endif %}
+        {% else %}
+        ...
+        {% endif %}
+        {% endfor %}
         {%else%}
         <h3>There are no reports!</h3>
         {%endif%}

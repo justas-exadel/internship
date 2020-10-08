@@ -1,14 +1,14 @@
 import os
 import smtplib
+from datetime import timedelta
 from email.message import EmailMessage
 from flask import render_template, redirect, url_for, flash, request, \
-    make_response
+    send_from_directory
 from forms import SignInForm, SignUpForm, PasswordResetForm, UtilitiesForm, \
     RequestResetForm, ProfileUpdateForm, ApartmentForm, GenerateReportForm
-from flask_paginate import Pagination, get_page_args
 from flask_login import logout_user, login_user, login_required
 from flask_login import current_user
-from __init__ import app, db, bcrypt, login_manager
+from __init__ import app, db, bcrypt, login_manager, basedir
 from models import Electricity, Gas, HotWater, ColdWater, Rent, OtherUtilities, \
     User, Report, Apartment
 from sqlalchemy import asc, desc
@@ -32,7 +32,11 @@ def sign_up():
         return redirect(url_for('home'))
     form = SignUpForm()
     try:
+        print(form.password.data, form.repeated_psw.data)
         if form.validate_on_submit():
+            if form.password.data != form.repeated_psw.data:
+                flash('Passwords must match!', 'danger')
+                return redirect(url_for('sign_up'))
             hashed_password = bcrypt.generate_password_hash(
                 form.password.data).decode('utf-8')
             user = User(name=form.name.data,
@@ -54,12 +58,13 @@ def sign_in():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
     form = SignInForm()
-    user = User.query.filter_by(email=form.email.data).first()
+    print("")
     if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
         if user:
             if user and bcrypt.check_password_hash(user.password,
                                                    form.password.data):
-                login_user(user, remember=form.remember_psw.data)
+                login_user(user, remember=form.remember_psw.data, duration=timedelta(days=5))
                 next_page = request.args.get('next')
                 return redirect(next_page) if next_page else redirect(
                     url_for('home'))
@@ -69,6 +74,7 @@ def sign_in():
         else:
             flash('This user is not registered',
                   'danger')
+
     return render_template('sign_in.html', title='Sign In', form=form)
 
 
@@ -226,7 +232,6 @@ def calculate_data(electricity_to, electricity_from, gas_to, gas_from,
                    hot_water_from, electricity_cost, gas_cost, cold_water_cost,
                    hot_water_cost, others_cost, rent_cost):
     electricity_dif = electricity_to - electricity_from
-    print("ss", electricity_from)
     gas_dif = gas_to - gas_from
     cold_water_dif = cold_water_to - cold_water_from
     hot_water_dif = hot_water_to - hot_water_from
@@ -260,58 +265,61 @@ def calculate_utilities(apartment):
                                 consumption_from=int(
                                     request.form['electricity_from']),
                                 consumption_to=form.electricity_to.data,
-                                difference=request.form['electricity_dif'],
+                                difference=int(
+                                    request.form['electricity_dif']),
                                 apartment_ID=apartment,
                                 cost=form.electricity_cost.data,
-                                sum=request.form['electricity_sum'])
+                                sum=float(request.form['electricity_sum']))
 
             gas_db = Gas(year=form.year.data, month=form.month.data,
                          consumption_from=int(request.form['gas_from']),
                          consumption_to=form.gas_to.data,
-                         difference=request.form['gas_dif'],
+                         difference=int(request.form['gas_dif']),
                          apartment_ID=apartment,
                          cost=form.gas_cost.data,
-                         sum=request.form[
-                             'gas_sum'])
+                         sum=float(request.form[
+                                       'gas_sum']))
 
             hot_water_db = HotWater(year=form.year.data, month=form.month.data,
                                     consumption_from=int(
                                         request.form['hot_water_from']),
                                     consumption_to=form.hot_water_to.data,
-                                    difference=request.form['hot_water_dif'],
+                                    difference=int(
+                                        request.form['hot_water_dif']),
                                     apartment_ID=apartment,
                                     cost=form.hot_water_cost.data,
-                                    sum=request.form[
-                                        'hot_water_sum'])
+                                    sum=float(request.form[
+                                                  'hot_water_sum']))
 
             cold_water_db = ColdWater(year=form.year.data,
                                       month=form.month.data,
                                       consumption_from=int(
                                           request.form['cold_water_from']),
                                       consumption_to=form.cold_water_to.data,
-                                      difference=request.form[
-                                          'cold_water_dif'],
+                                      difference=int(request.form[
+                                                         'cold_water_dif']),
                                       apartment_ID=apartment,
                                       cost=form.cold_water_cost.data,
-                                      sum=request.form[
-                                          'cold_water_sum'])
+                                      sum=float(request.form[
+                                                    'cold_water_sum']))
             others_db = OtherUtilities(year=form.year.data,
                                        month=form.month.data,
                                        apartment_ID=apartment,
                                        cost=form.other_ut_cost.data,
-                                       sum=request.form[
-                                           'other_ut_sum'])
+                                       sum=float(request.form[
+                                                     'other_ut_sum']))
 
             rent_db = Rent(year=form.year.data, month=form.month.data,
                            apartment_ID=apartment,
                            cost=form.rent_cost.data,
-                           sum=request.form[
-                               'rent_sum'])
+                           sum=float(request.form[
+                                         'rent_sum']))
 
             report = Report(rent=rent_db, electricity=el_db, gas=gas_db,
                             hot_water=hot_water_db, cold_water=cold_water_db,
                             other_utilities=others_db,
-                            sum_total=request.form['total_sum'], sent_ID=2)
+                            sum_total=float(request.form['total_sum']),
+                            sent_ID=2)
 
             data_to_db(el_db, gas_db, hot_water_db, cold_water_db, others_db,
                        rent_db, report)
@@ -320,7 +328,6 @@ def calculate_utilities(apartment):
                 f'Utilities data is successfully saved!',
                 'success')
             return redirect("/select_apartment")
-
         data = calculate_data(form.electricity_to.data,
                               int(request.form['electricity_from']),
                               form.gas_to.data, int(request.form['gas_from']),
@@ -339,7 +346,6 @@ def calculate_utilities(apartment):
                                data=data, data_from_last=data_from_last,
                                apartment_selected=Apartment.query.filter_by(
                                    id=apartment).first())
-
     return render_template('calculate_utilities.html', form=form,
                            data_from_last=data_from_last,
                            apartment_selected=Apartment.query.filter_by(
@@ -356,7 +362,9 @@ def generate_report():
 @app.route('/reports_history', methods=['GET', 'POST'])
 @login_required
 def reports_history():
-    data = Report.query.order_by(desc(Report.id)).all()
+    page = request.args.get('page', 1, type=int)
+    data = Report.query.order_by(desc(Report.id)).paginate(page=page,
+                                                           per_page=20)
     return render_template('reports_history.html', data=data)
 
 
@@ -379,18 +387,25 @@ def generated_report(id):
     return render_template('generated_report.html', report=report, form=form)
 
 
-@app.route('/report/<id>')
-@login_required
-def report_pdf(id):
+def download_pdf(id):
     name = "Generated Report"
     report = Report.query.filter_by(id=id).first()
     html = render_template('report_pdf.html', name=name, report=report)
-    pdf = pdfkit.from_string(html, False)
-    response = make_response(pdf)
-    response.headers['Content-Type'] = 'application/pdf'
-    response.headers[
-        'Content-Disposition'] = f'attachement; filename=utilities_report_{id}.pdf'
-    return response
+    options = {'orientation': 'Portrait'}
+    css = ['static/css/bootstrap.css', 'static/css/styles.css']
+    report_name = f'report-{id}.pdf'
+    pdfkit.from_string(html, report_name, css=css, options=options)
+    return report_name
+
+
+@app.route('/report/<id>')
+@login_required
+def report_pdf(id):
+    download_pdf(id)
+    app.config["CLIENT_PDF"] = basedir
+    return send_from_directory(app.config["CLIENT_PDF"],
+                               filename=f'report-{id}.pdf',
+                               as_attachment=True)
 
 
 def get_latest_pdf(path):
@@ -422,9 +437,7 @@ def send_report(id):
     email['subject'] = 'utilities consumption report'
 
     email.set_content(message)
-    os.chdir(
-        'C:\\Users\\GertrudaSK\\Downloads')
-    report = get_latest_pdf('C:/Users/GertrudaSK/Downloads/')
+    report = download_pdf(id)
 
     with open(f'{report}', 'rb') as file:
         content = file.read()

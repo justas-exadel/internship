@@ -1,23 +1,25 @@
 from flask_admin import Admin
 from flask_mail import Mail
 from flask_bcrypt import Bcrypt
-from flask_login import LoginManager
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from email_settings import EMAIL_HOST_PASSWORD, EMAIL_HOST_USER, EMAIL_USERNAME
+from settings import EMAIL_HOST_PASSWORD, EMAIL_HOST_USER, EMAIL_USERNAME, \
+    SECRET_KEY
 from flask_admin.contrib.sqla import ModelView
 from flask_admin import BaseView, expose
 from flask import redirect, url_for
 from flask_login import LoginManager, current_user
+
 # from flask_migrate import Migrate
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-basedir = os.path.abspath(os.path.dirname(__file__))
 
-app = Flask(__name__)
+app = Flask(__name__,
+            static_url_path='',
+            static_folder='./static/css/',
+            template_folder='./templates')
 
-SECRET_KEY = os.urandom(33)
 app.config['SECRET_KEY'] = SECRET_KEY
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir,
                                                                     'utilities.sqlite')
@@ -30,7 +32,7 @@ db.metadata.clear()
 
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
-login_manager.login_view = 'Sign In'
+login_manager.login_view = 'sign_in'
 login_manager.login_message_category = 'info'
 login_manager.login_message = "Sign In is necessary"
 
@@ -66,7 +68,7 @@ if 'utilities.sqlite' not in os.listdir():
 
 class MyModelView(ModelView):
     def is_accessible(self):
-        return current_user.is_authenticated
+        return current_user.is_authenticated and current_user.email == "viskoniekas@gmail.com"
 
 
 class MyView(BaseView):
@@ -76,16 +78,15 @@ class MyView(BaseView):
 
 
 admin.add_view(MyView(name='Back to Page'))
-admin.add_view(ModelView(User, db.session))
-admin.add_view(ModelView(House, db.session))
-admin.add_view(ModelView(Apartment, db.session))
-admin.add_view(ModelView(Renter, db.session))
-admin.add_view(ModelView(Service, db.session))
-admin.add_view(ModelView(ServiceCost, db.session))
-admin.add_view(ModelView(Electricity, db.session))
-admin.add_view(ModelView(Gas, db.session))
-admin.add_view(ModelView(HotWater, db.session))
-admin.add_view(ModelView(ColdWater, db.session))
-admin.add_view(ModelView(OtherUtilities, db.session))
-admin.add_view(ModelView(Rent, db.session))
-admin.add_view(ModelView(Report, db.session))
+admin.add_view(MyModelView(User, db.session))
+admin.add_view(MyModelView(House, db.session))
+admin.add_view(MyModelView(Apartment, db.session))
+admin.add_view(MyModelView(Renter, db.session))
+admin.add_view(MyModelView(Service, db.session))
+admin.add_view(MyModelView(ServiceCost, db.session))
+admin.add_view(MyModelView(Electricity, db.session))
+admin.add_view(MyModelView(Gas, db.session))
+admin.add_view(MyModelView(HotWater, db.session))
+admin.add_view(MyModelView(ColdWater, db.session))
+admin.add_view(MyModelView(OtherUtilities, db.session))
+admin.add_view(MyModelView(Rent, db.session))

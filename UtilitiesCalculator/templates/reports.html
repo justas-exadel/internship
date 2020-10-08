@@ -23,16 +23,16 @@
                         Generate
                     </button>
                 </a>
-                            <a href="{{url_for('report_pdf', id=item.id)}}">
-                    <button type="button" class="btn btn-secondary btn-sm">
-                        PDF
-                    </button>
-                </a>
-                           <a href="{{url_for('send_report', id=item.id)}}">
-                    <button type="button" class="btn btn-success btn-sm">
-                        SEND
-                    </button>
-                </a></td>
+                    <a href="{{url_for('report_pdf', id=item.id)}}">
+                        <button type="button" class="btn btn-secondary btn-sm">
+                            PDF
+                        </button>
+                    </a>
+                    <a href="{{url_for('send_report', id=item.id)}}">
+                        <button type="button" class="btn btn-success btn-sm">
+                            SEND
+                        </button>
+                    </a></td>
             </tr>
             {%endfor%}
             </tbody>

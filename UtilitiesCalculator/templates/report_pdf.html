@@ -5,9 +5,10 @@
     <title>Report</title>
 </head>
 <body>
-   <center class="report-table"><h2>
-    {{report.rent.apartment}}</h2>
-    <h4>{{report.rent.month}}/{{report.rent.year}}</h4>
+<section class="report-table">
+    <h2 class="centered">
+        {{report.rent.apartment}}</h2>
+    <h4 class="centered">{{report.rent.month}}/{{report.rent.year}}</h4>
     <br>
     <table class="table">
         <thead>
@@ -38,14 +39,6 @@
             <td>{{report.gas.sum}}</td>
         </tr>
         <tr>
-            <td>{{report.hot_water.cost.service}}</td>
-            <td>{{report.hot_water.consumption_from}}</td>
-            <td>{{report.hot_water.consumption_to}}</td>
-            <td>{{report.hot_water.difference}}</td>
-            <td>{{report.hot_water.cost.cost}}</td>
-            <td>{{report.hot_water.sum}}</td>
-        </tr>
-        <tr>
             <td>{{report.cold_water.cost.service}}</td>
             <td>{{report.cold_water.consumption_from}}</td>
             <td>{{report.cold_water.consumption_to}}</td>
@@ -54,7 +47,14 @@
             <td>{{report.cold_water.sum}}</td>
         </tr>
         <tr>
-
+            <td>{{report.hot_water.cost.service}}</td>
+            <td>{{report.hot_water.consumption_from}}</td>
+            <td>{{report.hot_water.consumption_to}}</td>
+            <td>{{report.hot_water.difference}}</td>
+            <td>{{report.hot_water.cost.cost}}</td>
+            <td>{{report.hot_water.sum}}</td>
+        </tr>
+        <tr>
             <td>{{report.other_utilities.cost.service}}</td>
             <td></td>
             <td></td>
@@ -81,6 +81,6 @@
         </tr>
         </tbody>
     </table>
-</center>
+</section>
 </body>
 </html>

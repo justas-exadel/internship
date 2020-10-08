@@ -6,10 +6,11 @@
         {{ form.hidden_tag() }}
         <div class="date_apartment">
             <h3> {{report.rent.apartment}}</h3>
-           <h4>
-               {{report.rent.month}}/{{report.rent.year}}</h4>
+            <h4>
+                {{report.rent.month}}/{{report.rent.year}}</h4>
 
-        </div>        <table class="table table-striped">
+        </div>
+        <table class="table table-striped">
             <thead>
             <tr>
                 <th scope="col">Utility</th>
@@ -26,11 +27,12 @@
                 <td>{{form.electricity_to(class="form_input")}}</td>
                 <td><input class="form_input" type="text"
                            name="electricity_from"
-                            value="{{report.electricity.consumption_from}}" disabled>
+                           value="{{report.electricity.consumption_from}}"
+                           disabled>
                 </td>
                 <td><input class="form_input" name="electricity_dif"
                            type="text"
-                            value="{%if data%}{{data.get('electricity_dif')}}{%else%}{{report.electricity.difference}}{%endif%}">
+                           value="{%if data%}{{data.get('electricity_dif')}}{%else%}{{report.electricity.difference}}{%endif%}">
                 </td>
                 <td>{{form.electricity_cost(class="form_input")}}</td>
                 <td><input class="form_input" name="electricity_sum"
@@ -57,7 +59,8 @@
                 <td>{{form.cold_water_to(class="form_input")}}</td>
                 <td><input class="form_input" type="text"
                            name="cold_water_from"
-                            value="{{report.cold_water.consumption_from}}" disabled>
+                           value="{{report.cold_water.consumption_from}}"
+                           disabled>
                 <td><input class="form_input" name="cold_water_dif" type="text"
                            value="{%if data%}{{data.get('cold_water_dif')}}{%else%}{{report.cold_water.difference}}{%endif%}">
                 </td>
@@ -70,7 +73,8 @@
                 <th scope="row">Hot Water</th>
                 <td>{{form.hot_water_to(class="form_input")}}</td>
                 <td><input class="form_input" type="text" name="hot_water_from"
-                            value="{{report.hot_water.consumption_from}}" disabled>
+                           value="{{report.hot_water.consumption_from}}"
+                           disabled>
                 </td>
                 <td><input class="form_input" name="hot_water_dif" type="text"
                            value="{%if data%}{{data.get('hot_water_dif')}}{%else%}{{report.hot_water.difference}}{%endif%}">

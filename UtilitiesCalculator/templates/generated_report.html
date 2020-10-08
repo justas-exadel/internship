@@ -35,7 +35,7 @@
                 <td>{{report.gas.cost.cost}}</td>
                 <td>{{report.gas.sum}}</td>
             </tr>
-                     <tr>
+            <tr>
                 <td>{{report.cold_water.cost.service}}</td>
                 <td>{{report.cold_water.consumption_from}}</td>
                 <td>{{report.cold_water.consumption_to}}</td>
@@ -77,9 +77,9 @@
             </tr>
             </tbody>
         </table>
-         {{ form.pdf(class="btn btn-secondary btn-md") }}
-         {%if report.sent_ID == 2%}
-         {{ form.edit(class="btn btn-info btn-md") }}
+        {{ form.pdf(class="btn btn-secondary btn-md") }}
+        {%if report.sent_ID == 2%}
+        {{ form.edit(class="btn btn-info btn-md") }}
         {{ form.delete(class="btn btn-danger btn-md") }}
         {{ form.send(class="btn btn-success btn-md") }}
         {%endif%}
