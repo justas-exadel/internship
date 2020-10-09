@@ -4,7 +4,7 @@ from flask_bcrypt import Bcrypt
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from settings import EMAIL_HOST_PASSWORD, EMAIL_HOST_USER, EMAIL_USERNAME, \
+from .settings import EMAIL_HOST_PASSWORD, EMAIL_HOST_USER, EMAIL_USERNAME, \
     SECRET_KEY
 from flask_admin.contrib.sqla import ModelView
 from flask_admin import BaseView, expose
@@ -15,15 +15,12 @@ from flask_login import LoginManager, current_user
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-app = Flask(__name__,
-            static_url_path='',
-            static_folder='./static/css/',
-            template_folder='./templates')
+app = Flask(__name__)
 
 app.config['SECRET_KEY'] = SECRET_KEY
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir,
                                                                     'utilities.sqlite')
-
+app.config['USE_SESSION_FOR_NEXT'] = True
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 db.metadata.clear()
@@ -34,7 +31,7 @@ bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'sign_in'
 login_manager.login_message_category = 'info'
-login_manager.login_message = "Sign In is necessary"
+login_manager.login_message = "You need to sign up!"
 
 mail = Mail(app)
 
@@ -46,23 +43,25 @@ app.config['MAIL_PASSWORD'] = EMAIL_HOST_PASSWORD
 
 admin = Admin(app, name='Utilities Calculator', template_mode='bootstrap3')
 
-import views
-from models import *
+import program_app.views
+from .models import Service, ApartmentStatus, ReportStatus, User, House, \
+    Apartment, Renter, ServiceCost, Electricity, Gas, ServiceCost, HotWater, \
+    ColdWater, OtherUtilities, Rent
 
 if 'utilities.sqlite' not in os.listdir():
     db.init_app(app)
     with app.app_context():
         db.create_all()
+        db.session.add(ApartmentStatus(status='RENT'))
+        db.session.add(ApartmentStatus(status='MAIN'))
+        db.session.add(ReportStatus(status='YES'))
+        db.session.add(ReportStatus(status='NO'))
         db.session.add(Service('Electricity'))
         db.session.add(Service('Gas'))
         db.session.add(Service('Hot Water'))
         db.session.add(Service('Cold Water'))
         db.session.add(Service('Rent'))
         db.session.add(Service('Other Utilities'))
-        db.session.add(ApartmentStatus(status='RENT'))
-        db.session.add(ApartmentStatus(status='MAIN'))
-        db.session.add(ReportStatus(status='YES'))
-        db.session.add(ReportStatus(status='NO'))
         db.session.commit()
 
 

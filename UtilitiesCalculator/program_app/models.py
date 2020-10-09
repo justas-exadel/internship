@@ -2,7 +2,7 @@ from sqlalchemy.orm import relationship
 from flask_login import UserMixin
 from sqlalchemy import Column, Integer, String, ForeignKey, Float
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-from __init__ import db, app
+from . import db, app
 
 
 class User(db.Model, UserMixin):
@@ -66,6 +66,9 @@ class Apartment(db.Model):
         'APARTMENT_STATUS.id'))
     status = relationship("ApartmentStatus")
 
+    def get_renter(self):
+        return Renter.query.filter_by(id=self.id).first()
+
     def __init__(self, address, square_feet):
         self.address = address
         self.square_feet = square_feet
@@ -82,7 +85,7 @@ class Renter(db.Model):
     email = db.Column('Email', db.String, nullable=False)
     phone = db.Column('Phone', db.String, nullable=True)
     apartment_ID = db.Column(db.Integer, ForeignKey('APARTMENT.id'))
-    apartment = relationship("Apartment")
+    apartment = relationship("Apartment", backref='renter')
 
 
 class Service(db.Model):
@@ -176,6 +179,10 @@ class OtherUtilities(Utility):
     cost_ID = db.Column(db.Integer, ForeignKey('SERVICE_COST.id'))
     cost = relationship("ServiceCost")
 
+    # def __init__(self, year , month, sum, apartment, cost):
+    #     super().__init(year, month, sum)
+    #     self.apartment = apartment
+    #     self.cost = cost
 
 class Rent(Utility):
     __tablename__ = 'RENT'
@@ -222,3 +229,5 @@ class ReportStatus(db.Model):
 
     def __repr__(self):
         return self.status
+
+

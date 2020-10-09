@@ -1,9 +1,9 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, BooleanField, IntegerField, \
-    SubmitField, PasswordField, SelectField
+from wtforms import (StringField, BooleanField, IntegerField,
+                     SubmitField, PasswordField, SelectField)
 from wtforms.validators import DataRequired, ValidationError, EqualTo, Email
 from wtforms_sqlalchemy.fields import QuerySelectField
-from models import User, Apartment, ServiceCost, Service, Electricity
+from .models import User, Apartment, ServiceCost, Service, Electricity
 from functools import partial
 from sqlalchemy import orm
 from datetime import date
@@ -42,7 +42,7 @@ class SignUpForm(FlaskForm):
     password = PasswordField('Password', [DataRequired()])
     repeated_psw = PasswordField("Repeat password",
                                  validators=[EqualTo('password',
-                                          "Passwords must match!")])
+                                                     "Passwords must match!")])
     submit = SubmitField('Submit')
 
     def validate(self):
