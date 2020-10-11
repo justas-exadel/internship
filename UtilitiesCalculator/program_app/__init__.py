@@ -48,7 +48,7 @@ from .models import Service, ApartmentStatus, ReportStatus, User, House, \
     Apartment, Renter, ServiceCost, Electricity, Gas, ServiceCost, HotWater, \
     ColdWater, OtherUtilities, Rent
 
-if 'utilities.sqlite' not in os.listdir():
+if 'utilities.sqlite' not in os.listdir(os.path.abspath('.\\program_app')):
     db.init_app(app)
     with app.app_context():
         db.create_all()

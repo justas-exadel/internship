@@ -2,17 +2,18 @@ import os
 import smtplib
 from datetime import timedelta
 from email.message import EmailMessage
+
 from flask import (render_template, redirect, url_for, flash, request,
                    send_from_directory)
 from .forms import (SignInForm, SignUpForm, PasswordResetForm, UtilitiesForm,
-                   RequestResetForm, ProfileUpdateForm, ApartmentForm,
-                   GenerateReportForm)
+                    RequestResetForm, ProfileUpdateForm, ApartmentForm,
+                    GenerateReportForm)
 from flask_login import (logout_user, login_user, login_required)
 from flask_login import current_user
 from . import (app, db, bcrypt, login_manager, basedir)
 from .models import (Electricity, Gas, HotWater, ColdWater, Rent,
-                    OtherUtilities,
-                    User, Report, Apartment)
+                     OtherUtilities,
+                     User, Report, Apartment)
 from sqlalchemy import asc, desc
 import pdfkit
 
@@ -367,7 +368,8 @@ def calculate_utilities(apartment):
             report = Report(rent=rent_db, electricity=el_db, gas=gas_db,
                             hot_water=hot_water_db, cold_water=cold_water_db,
                             other_utilities=others_db,
-                            sum_total=float(request.form['total_sum']),
+                            sum_total=round(float(request.form['total_sum']),
+                                            2),
                             sent_ID=2)
             data_to_db(el_db, gas_db, hot_water_db, cold_water_db, others_db,
                        rent_db, report)
@@ -395,54 +397,71 @@ def validate_all_reports():
     list_rep = ','.join(map(str, list_id))
 
     apartments = Report.query.filter(Report.rent_ID.in_(list_rep)).all()
-    apartments_sum = 0
-    house_sum = 0
-    apartments_electricity = 0
-    house_electricity = 0
-    apartments_gas = 0
-    house_gas = 0
-    apartments_cold_water = 0
-    house_cold_water = 0
-    apartments_hot_water = 0
-    house_hot_water = 0
-    apartments_others = 0
-    house_others = 0
-    apartments_rent = 0
-    house_rent = 0
+
+    houses = []
+    all_houses_sum = {}
+    for house in apartments:
+        if house.rent.apartment.house.address not in houses:
+            houses.append(house.rent.apartment.house.address)
+            all_houses_sum[house.rent.apartment.house.address] = {
+                'apartments_sum': 0, 'house_sum': 0,
+                'apartments_electricity': 0, 'house_electricity': 0,
+                'apartments_gas': 0, 'house_gas': 0,
+                'apartments_cold_water': 0, 'house_cold_water': 0,
+                'apartments_hot_water': 0, 'house_hot_water': 0,
+                'apartments_others': 0, 'house_others': 0,
+                'apartments_rent': 0, 'house_rent': 0}
 
     for ap in apartments:
         if ap.rent.apartment.status.status == 'RENT':
-            apartments_sum += ap.sum_total
-            apartments_electricity += ap.electricity.difference
-            apartments_gas += ap.gas.difference
-            apartments_cold_water += ap.cold_water.difference
-            apartments_hot_water += ap.hot_water.difference
-            apartments_others += ap.other_utilities.sum
-            apartments_rent += ap.rent.sum
+            all_houses_sum[ap.rent.apartment.house.address][
+                'apartments_sum'] += round(ap.sum_total, 2)
+            all_houses_sum[ap.rent.apartment.house.address][
+                'apartments_electricity'] += ap.electricity.difference
+            all_houses_sum[ap.rent.apartment.house.address][
+                'apartments_gas'] += ap.gas.difference
+            all_houses_sum[ap.rent.apartment.house.address][
+                'apartments_cold_water'] += ap.cold_water.difference
+            all_houses_sum[ap.rent.apartment.house.address][
+                'apartments_hot_water'] += ap.hot_water.difference
+            all_houses_sum[ap.rent.apartment.house.address][
+                'apartments_others'] += ap.other_utilities.sum
+            all_houses_sum[ap.rent.apartment.house.address][
+                'apartments_rent'] += ap.rent.sum
         elif ap.rent.apartment.status.status == 'MAIN':
-            house_sum = ap.sum_total
-            house_electricity += ap.electricity.difference
-            house_gas += ap.gas.difference
-            house_cold_water += ap.cold_water.difference
-            house_hot_water += ap.hot_water.difference
-            house_others += ap.other_utilities.sum
-            house_rent += ap.rent.sum
+            all_houses_sum[ap.rent.apartment.house.address][
+                'house_sum'] = round(ap.sum_total, 2)
+            all_houses_sum[ap.rent.apartment.house.address][
+                'house_electricity'] += ap.electricity.difference
+            all_houses_sum[ap.rent.apartment.house.address][
+                'house_gas'] += ap.gas.difference
+            all_houses_sum[ap.rent.apartment.house.address][
+                'house_cold_water'] += ap.cold_water.difference
+            all_houses_sum[ap.rent.apartment.house.address][
+                'house_hot_water'] += ap.hot_water.difference
+            all_houses_sum[ap.rent.apartment.house.address][
+                'house_others'] += ap.other_utilities.sum
+            all_houses_sum[ap.rent.apartment.house.address][
+                'house_rent'] += ap.rent.sum
 
-    mismatches = []
-    if apartments_sum != house_sum:
-        mismatches.append('sum')
-    if apartments_electricity != house_electricity:
-        mismatches.append('electricity')
-    if apartments_gas != house_gas:
-        mismatches.append('gas')
-    if apartments_cold_water != house_cold_water:
-        mismatches.append('cold water')
-    if apartments_hot_water != house_hot_water:
-        mismatches.append('hot water')
-    if apartments_others != house_others:
-        mismatches.append('other utilities')
-    if apartments_rent != house_rent:
-        mismatches.append('rent')
+    mismatches = {}
+
+    for key, value in all_houses_sum.items():
+        check = value
+        if check['apartments_sum'] != check['house_sum']:
+            mismatches['sum'] = key
+        if check['apartments_electricity'] != check['house_electricity']:
+            mismatches['electricity'] = key
+        if check['apartments_gas'] != check['house_gas']:
+            mismatches['gas'] = key
+        if check['apartments_cold_water'] != check['house_cold_water']:
+            mismatches['cold water'] = key
+        if check['apartments_hot_water'] != check['house_hot_water']:
+            mismatches['hot water'] = key
+        if check['apartments_others'] != check['house_others']:
+            mismatches['other utilities'] = key
+        if check['apartments_rent'] != check['house_rent']:
+            mismatches['rent'] = key
 
     return mismatches
 
@@ -454,7 +473,7 @@ def generate_report():
     if len(validate) == 0:
         flash('All reports match the main report!', 'info')
     else:
-        errors = ", ".join(validate)
+        errors = str(validate).replace("{", "").replace("}", "")
         flash(f'There is mismatch in reports - check {errors}.', 'danger')
     data = Report.query.filter_by(sent_ID=2).all()
     return render_template('reports.html', data=data)
@@ -493,9 +512,11 @@ def download_pdf(id):
     report = Report.query.filter_by(id=id).first()
     html = render_template('report_pdf.html', name=name, report=report)
     options = {'orientation': 'Portrait'}
-    css = ['program_app/static/css/bootstrap.css', 'program_app/static/css/styles.css']
+    css = ['program_app/static/css/bootstrap.css',
+           'program_app/static/css/styles.css']
     report_name = f'report-{id}.pdf'
-    pdfkit.from_string(html, report_name, css=css, options=options)
+    pdfkit.from_string(html, f'reports/{report_name}', css=css,
+                       options=options)
     return report_name
 
 
@@ -503,9 +524,10 @@ def download_pdf(id):
 @login_required
 def report_pdf(id):
     download_pdf(id)
-    return send_from_directory(os.getcwd(),
+    return send_from_directory(os.path.abspath('.\\reports'),
                                filename=f'report-{id}.pdf',
                                as_attachment=True)
+
 
 def get_latest_pdf(path):
     files = os.listdir(path)
@@ -547,6 +569,7 @@ def send_report(id):
     email.set_content(message)
     report = download_pdf(id)
 
+    os.chdir(r'./reports')
     with open(f'{report}', 'rb') as file:
         content = file.read()
         email.add_attachment(
@@ -554,13 +577,13 @@ def send_report(id):
             maintype='application/pdf',
             subtype='pdf',
             filename=f'{report}')
-
     with smtplib.SMTP(host='smtp.gmail.com', port=587) as smtp:
         smtp.ehlo()
         smtp.starttls()
-        smtp.login('viskoniekas@gmail.com', 'xxx')
+        smtp.login('viskoniekas@gmail.com', 'XXX')
         smtp.send_message(email)
         change_report_status(id)
+        os.chdir('../')
     flash(
         f'Report is successfully sent!',
         'success')
@@ -611,7 +634,7 @@ def edit_report(id):
             report.other_utilities.sum = request.form['other_ut_sum']
             report.rent.cost = form.rent_cost.data
             report.rent.sum = request.form['rent_sum']
-            report.sum_total = request.form['total_sum']
+            report.sum_total = round(float(request.form['total_sum']), 2)
             db.session.commit()
             flash('Report updated successfully!', 'success')
             return redirect(url_for('generated_report', id=id))
