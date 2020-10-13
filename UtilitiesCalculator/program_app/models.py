@@ -187,10 +187,6 @@ class OtherUtilities(Utility):
     cost_ID = db.Column(db.Integer, db.ForeignKey('SERVICE_COST.id'))
     cost = db.relationship("ServiceCost")
 
-    # def __init__(self, year , month, sum, apartment, cost):
-    #     super().__init(year, month, sum)
-    #     self.apartment = apartment
-    #     self.cost = cost
 
 class Rent(Utility):
     __tablename__ = 'RENT'
