@@ -60,14 +60,14 @@ class Apartment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     address = db.Column('Address', db.String, nullable=False)
     square_feet = db.Column('Square Feet (m3)', db.Float, nullable=True)
-    house_ID = db.Column(db.Integer, ForeignKey('HOUSE.id'))
-    house = relationship("House")
-    status_ID = db.Column(db.Integer, ForeignKey(
+    house_ID = db.Column(db.Integer, db.ForeignKey('HOUSE.id'))
+    house = db.relationship("House")
+    status_ID = db.Column(db.Integer, db.ForeignKey(
         'APARTMENT_STATUS.id'))
-    status = relationship("ApartmentStatus")
-
-    def get_renter(self):
-        return Renter.query.filter_by(id=self.id).first()
+    status = db.relationship("ApartmentStatus")
+    renter_ID = db.Column(db.Integer, db.ForeignKey(
+        'RENTER.id'))
+    renter = db.relationship("Renter")
 
     def __init__(self, address, square_feet):
         self.address = address
@@ -84,8 +84,16 @@ class Renter(db.Model):
     surname = db.Column('Surname', db.String, nullable=False)
     email = db.Column('Email', db.String, nullable=False)
     phone = db.Column('Phone', db.String, nullable=True)
-    apartment_ID = db.Column(db.Integer, ForeignKey('APARTMENT.id'))
-    apartment = relationship("Apartment", backref='renter')
+    apartment = db.relationship('Apartment')
+
+    def __init__(self, name, surname, email, phone):
+        self.name = name
+        self.surname = surname
+        self.email = email
+        self.phone = phone
+
+    def __repr__(self):
+        return f'{self.name} {self.surname}'
 
 
 class Service(db.Model):
@@ -106,8 +114,8 @@ class ServiceCost(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column('Name', db.String, nullable=False)
     cost = db.Column('Cost', db.Float, nullable=False)
-    service_ID = db.Column(db.Integer, ForeignKey('SERVICE.id'))
-    service = relationship("Service")
+    service_ID = db.Column(db.Integer, db.ForeignKey('SERVICE.id'))
+    service = db.relationship("Service")
 
     def __init__(self, name, cost, service_ID):
         self.name = name
@@ -135,10 +143,10 @@ class Consumption(db.Model):
 class Electricity(Utility, Consumption):
     __tablename__ = 'ELECTRICITY'
     id = db.Column(db.Integer, primary_key=True)
-    apartment_ID = db.Column(db.Integer, ForeignKey('APARTMENT.id'))
-    apartment = relationship("Apartment")
-    cost_ID = db.Column(db.Integer, ForeignKey('SERVICE_COST.id'))
-    cost = relationship("ServiceCost")
+    apartment_ID = db.Column(db.Integer, db.ForeignKey('APARTMENT.id'))
+    apartment = db.relationship("Apartment")
+    cost_ID = db.Column(db.Integer, db.ForeignKey('SERVICE_COST.id'))
+    cost = db.relationship("ServiceCost")
 
     def __repr__(self):
         return f'{self.apartment}'
@@ -147,37 +155,37 @@ class Electricity(Utility, Consumption):
 class Gas(Utility, Consumption):
     __tablename__ = 'GAS'
     id = db.Column(db.Integer, primary_key=True)
-    apartment_ID = db.Column(db.Integer, ForeignKey('APARTMENT.id'))
-    apartment = relationship("Apartment")
-    cost_ID = db.Column(db.Integer, ForeignKey('SERVICE_COST.id'))
-    cost = relationship("ServiceCost")
+    apartment_ID = db.Column(db.Integer, db.ForeignKey('APARTMENT.id'))
+    apartment = db.relationship("Apartment")
+    cost_ID = db.Column(db.Integer, db.ForeignKey('SERVICE_COST.id'))
+    cost = db.relationship("ServiceCost")
 
 
 class HotWater(Utility, Consumption):
     __tablename__ = 'HOT_WATER'
     id = db.Column(db.Integer, primary_key=True)
-    apartment_ID = db.Column(db.Integer, ForeignKey('APARTMENT.id'))
-    apartment = relationship("Apartment")
-    cost_ID = db.Column(db.Integer, ForeignKey('SERVICE_COST.id'))
-    cost = relationship("ServiceCost")
+    apartment_ID = db.Column(db.Integer, db.ForeignKey('APARTMENT.id'))
+    apartment = db.relationship("Apartment")
+    cost_ID = db.Column(db.Integer, db.ForeignKey('SERVICE_COST.id'))
+    cost = db.relationship("ServiceCost")
 
 
 class ColdWater(Utility, Consumption):
     __tablename__ = 'COLD_WATER'
     id = db.Column(db.Integer, primary_key=True)
-    apartment_ID = db.Column(db.Integer, ForeignKey('APARTMENT.id'))
-    apartment = relationship("Apartment")
-    cost_ID = db.Column(db.Integer, ForeignKey('SERVICE_COST.id'))
-    cost = relationship("ServiceCost")
+    apartment_ID = db.Column(db.Integer, db.ForeignKey('APARTMENT.id'))
+    apartment = db.relationship("Apartment")
+    cost_ID = db.Column(db.Integer, db.ForeignKey('SERVICE_COST.id'))
+    cost = db.relationship("ServiceCost")
 
 
 class OtherUtilities(Utility):
     __tablename__ = 'OTHER_UTILITIES'
     id = db.Column(db.Integer, primary_key=True)
-    apartment_ID = db.Column(db.Integer, ForeignKey('APARTMENT.id'))
-    apartment = relationship("Apartment")
-    cost_ID = db.Column(db.Integer, ForeignKey('SERVICE_COST.id'))
-    cost = relationship("ServiceCost")
+    apartment_ID = db.Column(db.Integer, db.ForeignKey('APARTMENT.id'))
+    apartment = db.relationship("Apartment")
+    cost_ID = db.Column(db.Integer, db.ForeignKey('SERVICE_COST.id'))
+    cost = db.relationship("ServiceCost")
 
     # def __init__(self, year , month, sum, apartment, cost):
     #     super().__init(year, month, sum)
@@ -187,36 +195,36 @@ class OtherUtilities(Utility):
 class Rent(Utility):
     __tablename__ = 'RENT'
     id = db.Column(db.Integer, primary_key=True)
-    apartment_ID = db.Column(db.Integer, ForeignKey('APARTMENT.id'))
-    apartment = relationship("Apartment")
-    cost_ID = db.Column(db.Integer, ForeignKey('SERVICE_COST.id'))
-    cost = relationship("ServiceCost")
+    apartment_ID = db.Column(db.Integer, db.ForeignKey('APARTMENT.id'))
+    apartment = db.relationship("Apartment")
+    cost_ID = db.Column(db.Integer, db.ForeignKey('SERVICE_COST.id'))
+    cost = db.relationship("ServiceCost")
 
 
 class Report(db.Model):
     __tablename__ = 'REPORT'
     id = db.Column(db.Integer, primary_key=True)
-    rent_ID = db.Column(db.Integer, ForeignKey('RENT.id'))
-    rent = relationship("Rent", single_parent=True,
+    rent_ID = db.Column(db.Integer, db.ForeignKey('RENT.id'))
+    rent = db.relationship("Rent", single_parent=True,
                         cascade="all, delete-orphan")
-    electricity_ID = db.Column(db.Integer, ForeignKey('ELECTRICITY.id'))
-    electricity = relationship("Electricity", single_parent=True,
+    electricity_ID = db.Column(db.Integer, db.ForeignKey('ELECTRICITY.id'))
+    electricity = db.relationship("Electricity", single_parent=True,
                                cascade="all, delete-orphan")
-    gas_ID = db.Column(db.Integer, ForeignKey('GAS.id'))
-    gas = relationship("Gas", single_parent=True, cascade="all, delete-orphan")
-    hot_water_ID = db.Column(db.Integer, ForeignKey('HOT_WATER.id'))
-    hot_water = relationship("HotWater", single_parent=True,
+    gas_ID = db.Column(db.Integer, db.ForeignKey('GAS.id'))
+    gas = db.relationship("Gas", single_parent=True, cascade="all, delete-orphan")
+    hot_water_ID = db.Column(db.Integer, db.ForeignKey('HOT_WATER.id'))
+    hot_water = db.relationship("HotWater", single_parent=True,
                              cascade="all, delete-orphan")
-    cold_water_ID = db.Column(db.Integer, ForeignKey('COLD_WATER.id'))
-    cold_water = relationship("ColdWater", single_parent=True,
+    cold_water_ID = db.Column(db.Integer, db.ForeignKey('COLD_WATER.id'))
+    cold_water = db.relationship("ColdWater", single_parent=True,
                               cascade="all, delete-orphan")
     other_utilities_ID = db.Column(db.Integer,
-                                   ForeignKey('OTHER_UTILITIES.id'))
-    other_utilities = relationship("OtherUtilities", single_parent=True,
+                                   db.ForeignKey('OTHER_UTILITIES.id'))
+    other_utilities = db.relationship("OtherUtilities", single_parent=True,
                                    cascade="all, delete-orphan")
     sum_total = db.Column('Total Eur', db.Float)
-    sent_ID = db.Column(db.Integer, ForeignKey('REPORT_STATUS.id'))
-    sent = relationship("ReportStatus")
+    sent_ID = db.Column(db.Integer, db.ForeignKey('REPORT_STATUS.id'))
+    sent = db.relationship("ReportStatus")
 
 
 class ReportStatus(db.Model):

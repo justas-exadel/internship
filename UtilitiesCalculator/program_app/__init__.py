@@ -11,7 +11,7 @@ from flask_admin import BaseView, expose
 from flask import redirect, url_for
 from flask_login import LoginManager, current_user
 
-# from flask_migrate import Migrate
+from flask_migrate import Migrate
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -25,7 +25,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 db.metadata.clear()
 
-# Migrate(app, db)
+Migrate(app, db)
 
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
@@ -48,21 +48,22 @@ from .models import Service, ApartmentStatus, ReportStatus, User, House, \
     Apartment, Renter, ServiceCost, Electricity, Gas, ServiceCost, HotWater, \
     ColdWater, OtherUtilities, Rent
 
-if 'utilities.sqlite' not in os.listdir(os.path.abspath('.\\program_app')):
-    db.init_app(app)
-    with app.app_context():
-        db.create_all()
-        db.session.add(ApartmentStatus(status='RENT'))
-        db.session.add(ApartmentStatus(status='MAIN'))
-        db.session.add(ReportStatus(status='YES'))
-        db.session.add(ReportStatus(status='NO'))
-        db.session.add(Service('Electricity'))
-        db.session.add(Service('Gas'))
-        db.session.add(Service('Hot Water'))
-        db.session.add(Service('Cold Water'))
-        db.session.add(Service('Rent'))
-        db.session.add(Service('Other Utilities'))
-        db.session.commit()
+def create_tables():
+    if 'utilities.sqlite' not in os.listdir(os.path.abspath('program_app')):
+        db.init_app(app)
+        with app.app_context():
+            db.create_all()
+            db.session.add(ApartmentStatus(status='RENT'))
+            db.session.add(ApartmentStatus(status='MAIN'))
+            db.session.add(ReportStatus(status='YES'))
+            db.session.add(ReportStatus(status='NO'))
+            db.session.add(Service('Electricity'))
+            db.session.add(Service('Gas'))
+            db.session.add(Service('Hot Water'))
+            db.session.add(Service('Cold Water'))
+            db.session.add(Service('Rent'))
+            db.session.add(Service('Other Utilities'))
+            db.session.commit()
 
 
 class MyModelView(ModelView):

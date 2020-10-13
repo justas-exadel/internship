@@ -384,20 +384,7 @@ def calculate_utilities(apartment):
                                id=apartment).first())
 
 
-def validate_all_reports():
-    last_report = Report.query.order_by(
-        asc(Report.id)).all()[-1]
-    last_year = last_report.rent.year
-    last_month = last_report.rent.month
-    list_id = []
-
-    all_bills = Rent.query.filter_by(year=last_year, month=last_month).all()
-    for item in all_bills:
-        list_id.append(str(item.id))
-    list_rep = ','.join(map(str, list_id))
-
-    apartments = Report.query.filter(Report.rent_ID.in_(list_rep)).all()
-
+def all_apartments_data(apartments):
     houses = []
     all_houses_sum = {}
     for house in apartments:
@@ -444,25 +431,46 @@ def validate_all_reports():
             all_houses_sum[ap.rent.apartment.house.address][
                 'house_rent'] += ap.rent.sum
 
+    return all_houses_sum
+
+
+def validate_all_reports():
+    reports = Report.query.order_by(asc(Report.id)).all()
     mismatches = {}
+    if len(reports) > 0:
+        last_report = Report.query.order_by(
+            asc(Report.id)).all()[-1]
 
-    for key, value in all_houses_sum.items():
-        check = value
-        if check['apartments_sum'] != check['house_sum']:
-            mismatches['sum'] = key
-        if check['apartments_electricity'] != check['house_electricity']:
-            mismatches['electricity'] = key
-        if check['apartments_gas'] != check['house_gas']:
-            mismatches['gas'] = key
-        if check['apartments_cold_water'] != check['house_cold_water']:
-            mismatches['cold water'] = key
-        if check['apartments_hot_water'] != check['house_hot_water']:
-            mismatches['hot water'] = key
-        if check['apartments_others'] != check['house_others']:
-            mismatches['other utilities'] = key
-        if check['apartments_rent'] != check['house_rent']:
-            mismatches['rent'] = key
+        last_year = last_report.rent.year
+        last_month = last_report.rent.month
+        list_id = []
 
+        all_bills = Rent.query.filter_by(year=last_year,
+                                         month=last_month).all()
+        for item in all_bills:
+            list_id.append(str(item.id))
+        list_rep = ','.join(map(str, list_id))
+
+        apartments = Report.query.filter(Report.rent_ID.in_(list_rep)).all()
+
+        all_houses_sum = all_apartments_data(apartments)
+
+        for key, value in all_houses_sum.items():
+            check = value
+            if check['apartments_sum'] != check['house_sum']:
+                mismatches['sum'] = key
+            if check['apartments_electricity'] != check['house_electricity']:
+                mismatches['electricity'] = key
+            if check['apartments_gas'] != check['house_gas']:
+                mismatches['gas'] = key
+            if check['apartments_cold_water'] != check['house_cold_water']:
+                mismatches['cold water'] = key
+            if check['apartments_hot_water'] != check['house_hot_water']:
+                mismatches['hot water'] = key
+            if check['apartments_others'] != check['house_others']:
+                mismatches['other utilities'] = key
+            if check['apartments_rent'] != check['house_rent']:
+                mismatches['rent'] = key
     return mismatches
 
 
@@ -471,10 +479,11 @@ def validate_all_reports():
 def generate_report():
     validate = validate_all_reports()
     if len(validate) == 0:
-        flash('All reports match the main report!', 'info')
+        flash('There are no mismatches!', 'info')
     else:
-        errors = str(validate).replace("{", "").replace("}", "")
-        flash(f'There is mismatch in reports - check {errors}.', 'danger')
+        errors = str(validate).replace("{", "").replace("}", "").replace("'",
+                                                                         "")
+        flash(f'There are mismatches - check {errors}.', 'danger')
     data = Report.query.filter_by(sent_ID=2).all()
     return render_template('reports.html', data=data)
 
@@ -560,7 +569,7 @@ def send_report(id):
         Landlord
         '''
     rep = Report.query.filter_by(id=1).first()
-    recipient = rep.rent.apartment.get_renter().email
+    recipient = rep.rent.apartment.renter.email
     email = EmailMessage()
     email['from'] = 'Apartment Rent'
     email['to'] = recipient
