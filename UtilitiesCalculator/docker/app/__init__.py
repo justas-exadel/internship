@@ -47,21 +47,21 @@ def database_initialization_sequence():
         HotWater, \
         ColdWater, OtherUtilities, Rent
     check_rows = Service.query.all()
-    # if len(check_rows) == 0:
-    db.init_app(app)
-    with app.app_context():
-        db.create_all()
-        db.session.add(ApartmentStatus(status='RENT'))
-        db.session.add(ApartmentStatus(status='MAIN'))
-        db.session.add(ReportStatus(status='YES'))
-        db.session.add(ReportStatus(status='NO'))
-        db.session.add(Service('Electricity'))
-        db.session.add(Service('Gas'))
-        db.session.add(Service('Hot Water'))
-        db.session.add(Service('Cold Water'))
-        db.session.add(Service('Rent'))
-        db.session.add(Service('Other Utilities'))
-        db.session.commit()
+    if len(check_rows) == 0:
+        db.init_app(app)
+        with app.app_context():
+            db.create_all()
+            db.session.add(ApartmentStatus(status='RENT'))
+            db.session.add(ApartmentStatus(status='MAIN'))
+            db.session.add(ReportStatus(status='YES'))
+            db.session.add(ReportStatus(status='NO'))
+            db.session.add(Service('Electricity'))
+            db.session.add(Service('Gas'))
+            db.session.add(Service('Hot Water'))
+            db.session.add(Service('Cold Water'))
+            db.session.add(Service('Rent'))
+            db.session.add(Service('Other Utilities'))
+            db.session.commit()
 
 
 class MyModelView(ModelView):
