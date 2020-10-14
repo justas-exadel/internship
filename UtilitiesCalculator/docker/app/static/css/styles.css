@@ -1,0 +1,44 @@
+* {
+font-family: 'Roboto Condensed';
+}
+
+.block {
+display: flex;
+justify-content: center;
+align-items: center;
+}
+
+.form_frame {
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+}
+
+.date_apartment{
+display: flex;
+justify-content: space-between;
+margin: 40px 0 40px 0;
+}
+
+.select_data{
+width: 30%;
+}
+
+.buttons{
+display: flex;
+justify-content: space-between;
+}
+
+.reports{
+width: 50%!important;
+}
+
+.report-table{
+width: 60%;
+margin:0 auto!important;
+}
+
+.centered{
+text-align: center;
+}

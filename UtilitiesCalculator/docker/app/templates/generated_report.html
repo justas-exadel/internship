@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block content %}
+<center class="report-table"><h2>
+    {{report.rent.apartment}}</h2>
+    <h4>{{report.rent.month}}/{{report.rent.year}}</h4>
+    <br>
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <table class="table">
+            <thead>
+            <tr>
+                <th scope="col">Utility</th>
+                <th scope="col">From</th>
+                <th scope="col">To</th>
+                <th scope="col">Difference</th>
+                <th scope="col">Cost</th>
+                <th scope="col">Sum</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>{{report.electricity.cost.service}}</td>
+                <td>{{report.electricity.consumption_from}}</td>
+                <td>{{report.electricity.consumption_to}}</td>
+                <td>{{report.electricity.difference}}</td>
+                <td>{{report.electricity.cost.cost}}</td>
+                <td>{{report.electricity.sum}}</td>
+            </tr>
+            <tr>
+                <td>{{report.gas.cost.service}}</td>
+                <td>{{report.gas.consumption_from}}</td>
+                <td>{{report.gas.consumption_to}}</td>
+                <td>{{report.gas.difference}}</td>
+                <td>{{report.gas.cost.cost}}</td>
+                <td>{{report.gas.sum}}</td>
+            </tr>
+            <tr>
+                <td>{{report.cold_water.cost.service}}</td>
+                <td>{{report.cold_water.consumption_from}}</td>
+                <td>{{report.cold_water.consumption_to}}</td>
+                <td>{{report.cold_water.difference}}</td>
+                <td>{{report.cold_water.cost.cost}}</td>
+                <td>{{report.cold_water.sum}}</td>
+            </tr>
+            <tr>
+                <td>{{report.hot_water.cost.service}}</td>
+                <td>{{report.hot_water.consumption_from}}</td>
+                <td>{{report.hot_water.consumption_to}}</td>
+                <td>{{report.hot_water.difference}}</td>
+                <td>{{report.hot_water.cost.cost}}</td>
+                <td>{{report.hot_water.sum}}</td>
+            </tr>
+            <tr>
+                <td>{{report.other_utilities.cost.service}}</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>{{report.other_utilities.cost.cost}}</td>
+                <td>{{report.other_utilities.sum}}</td>
+            </tr>
+            <tr>
+                <td>{{report.rent.cost.service}}</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>{{report.rent.cost.cost}}</td>
+                <td>{{report.rent.sum}}</td>
+            </tr>
+            <tr>
+                <td><b>Total Eur</b></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td><b>{{report.sum_total}}</b></td>
+            </tr>
+            </tbody>
+        </table>
+        {{ form.pdf(class="btn btn-secondary btn-md") }}
+        {%if report.sent_ID == 2%}
+        {{ form.edit(class="btn btn-info btn-md") }}
+        {{ form.delete(class="btn btn-danger btn-md") }}
+        {{ form.send(class="btn btn-success btn-md") }}
+        {%endif%}
+    </form>
+
+</center>
+{% endblock content %}
