@@ -533,7 +533,8 @@ def download_pdf(id):
 @login_required
 def report_pdf(id):
     download_pdf(id)
-    return send_from_directory(os.path.abspath('.\\reports'),
+    return send_from_directory(os.path.abspath(
+        os.path.join(os.path.dirname(__file__), '..', 'reports')),
                                filename=f'report-{id}.pdf',
                                as_attachment=True)
 

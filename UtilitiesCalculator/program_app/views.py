@@ -4,7 +4,7 @@ from datetime import timedelta
 from email.message import EmailMessage
 
 from flask import (render_template, redirect, url_for, flash, request,
-                   send_from_directory)
+                   send_from_directory, current_app)
 from .forms import (SignInForm, SignUpForm, PasswordResetForm, UtilitiesForm,
                     RequestResetForm, ProfileUpdateForm, ApartmentForm,
                     GenerateReportForm)
@@ -533,9 +533,10 @@ def download_pdf(id):
 @login_required
 def report_pdf(id):
     download_pdf(id)
-    return send_from_directory(os.path.abspath('.\\reports'),
-                               filename=f'report-{id}.pdf',
-                               as_attachment=True)
+    return send_from_directory(
+        os.path.join(os.getcwd(), os.path.abspath('.\\reports')),
+        filename=f'report-{id}.pdf',
+        as_attachment=True)
 
 
 def get_latest_pdf(path):
