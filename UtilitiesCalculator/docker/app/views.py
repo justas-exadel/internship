@@ -16,6 +16,7 @@ from .models import (Electricity, Gas, HotWater, ColdWater, Rent,
                      User, Report, Apartment)
 from sqlalchemy import asc, desc
 import pdfkit
+from .settings import EMAIL_HOST_USER, EMAIL_HOST_PASSWORD
 
 
 @login_manager.user_loader
@@ -569,7 +570,7 @@ def send_report(id):
         Sincerely,
         Landlord
         '''
-    rep = Report.query.filter_by(id=1).first()
+    rep = Report.query.filter_by(id=id).first()
     recipient = rep.rent.apartment.get_renter_email()
     email = EmailMessage()
     email['from'] = 'Apartment Rent'
@@ -590,7 +591,7 @@ def send_report(id):
     with smtplib.SMTP(host='smtp.gmail.com', port=587) as smtp:
         smtp.ehlo()
         smtp.starttls()
-        smtp.login('viskoniekas@gmail.com', 'XXX')
+        smtp.login(EMAIL_HOST_USER, EMAIL_HOST_PASSWORD)
         smtp.send_message(email)
         change_report_status(id)
         os.chdir('../')
