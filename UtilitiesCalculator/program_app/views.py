@@ -16,6 +16,7 @@ from .models import (Electricity, Gas, HotWater, ColdWater, Rent,
                      User, Report, Apartment)
 from sqlalchemy import asc, desc
 import pdfkit
+from .settings import EMAIL_HOST_USER, EMAIL_HOST_PASSWORD
 
 
 @login_manager.user_loader
@@ -590,7 +591,13 @@ def send_report(id):
     with smtplib.SMTP(host='smtp.gmail.com', port=587) as smtp:
         smtp.ehlo()
         smtp.starttls()
-        smtp.login('viskoniekas@gmail.com', 'XXX')
+        try:
+            smtp.login(EMAIL_HOST_USER, EMAIL_HOST_PASSWORD)
+        except smtplib.SMTPAuthenticationError:
+            flash(
+                f'Username and Password not accepted!',
+                'danger')
+            return redirect("/")
         smtp.send_message(email)
         change_report_status(id)
         os.chdir('../')
