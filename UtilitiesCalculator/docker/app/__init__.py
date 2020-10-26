@@ -39,6 +39,10 @@ migrate = Migrate(app,db)
 
 admin = Admin(app, name='Utilities Calculator', template_mode='bootstrap3')
 
+if 'reports' not in os.listdir():
+    os.mkdir('reports')
+
+
 from app import views
 
 def database_initialization_sequence():

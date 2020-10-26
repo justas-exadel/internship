@@ -43,6 +43,9 @@ app.config['MAIL_PASSWORD'] = EMAIL_HOST_PASSWORD
 
 admin = Admin(app, name='Utilities Calculator', template_mode='bootstrap3')
 
+if 'reports' not in os.listdir():
+    os.mkdir('reports')
+
 import program_app.views
 from .models import Service, ApartmentStatus, ReportStatus, User, House, \
     Apartment, Renter, ServiceCost, Electricity, Gas, ServiceCost, HotWater, \
