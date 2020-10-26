@@ -571,7 +571,13 @@ def send_report(id):
         Landlord
         '''
     rep = Report.query.filter_by(id=id).first()
+
     recipient = rep.rent.apartment.get_renter_email()
+    if recipient is None:
+        flash(
+            f'The recipient has no email address!',
+            'danger')
+        return redirect("/")
     email = EmailMessage()
     email['from'] = 'Apartment Rent'
     email['to'] = recipient

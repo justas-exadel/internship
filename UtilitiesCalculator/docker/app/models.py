@@ -73,7 +73,10 @@ class Apartment(db.Model):
 
     def get_renter_email(self):
         renter = Renter.query.filter_by(id=self.id).first()
-        return renter.email
+        if renter and renter.email:
+            return renter.email
+        else:
+            return None
 
     def __repr__(self):
         return self.address

@@ -31,7 +31,7 @@ class User(db.Model, UserMixin):
 class House(db.Model):
     __tablename__ = 'HOUSE'
     id = db.Column(db.Integer, primary_key=True)
-    address = db.Column('Address', db.String, nullable=False)
+    address = db.Column('Address', db.String(100), nullable=False)
     apartments_count = db.Column('Apartments Total', db.Integer,
                                  nullable=False)
 
@@ -46,7 +46,7 @@ class House(db.Model):
 class ApartmentStatus(db.Model):
     __tablename__ = 'APARTMENT_STATUS'
     id = db.Column(db.Integer, primary_key=True)
-    status = db.Column(db.String, nullable=False)
+    status = db.Column(db.String(100), nullable=False)
 
     def __init__(self, status):
         self.status = status
@@ -58,20 +58,25 @@ class ApartmentStatus(db.Model):
 class Apartment(db.Model):
     __tablename__ = 'APARTMENT'
     id = db.Column(db.Integer, primary_key=True)
-    address = db.Column('Address', db.String, nullable=False)
+    address = db.Column('Address', db.String(100), nullable=False)
     square_feet = db.Column('Square Feet (m3)', db.Float, nullable=True)
     house_ID = db.Column(db.Integer, db.ForeignKey('HOUSE.id'))
     house = db.relationship("House")
     status_ID = db.Column(db.Integer, db.ForeignKey(
         'APARTMENT_STATUS.id'))
     status = db.relationship("ApartmentStatus")
-    renter_ID = db.Column(db.Integer, db.ForeignKey(
-        'RENTER.id'))
     renter = db.relationship("Renter")
 
     def __init__(self, address, square_feet):
         self.address = address
         self.square_feet = square_feet
+
+    def get_renter_email(self):
+        renter = Renter.query.filter_by(id=self.id).first()
+        if renter and renter.email:
+            return renter.email
+        else:
+            return None
 
     def __repr__(self):
         return self.address
@@ -80,10 +85,12 @@ class Apartment(db.Model):
 class Renter(db.Model):
     __tablename__ = 'RENTER'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column('Name', db.String, nullable=False)
-    surname = db.Column('Surname', db.String, nullable=False)
-    email = db.Column('Email', db.String, nullable=False)
-    phone = db.Column('Phone', db.String, nullable=True)
+    name = db.Column('Name', db.String(100), nullable=False)
+    surname = db.Column('Surname', db.String(100), nullable=False)
+    email = db.Column('Email', db.String(100), nullable=False)
+    phone = db.Column('Phone', db.String(100), nullable=True)
+    apartment_ID = db.Column(db.Integer, db.ForeignKey(
+        'APARTMENT.id'))
     apartment = db.relationship('Apartment')
 
     def __init__(self, name, surname, email, phone):
@@ -100,7 +107,7 @@ class Service(db.Model):
     __tablename__ = 'SERVICE'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column('Name', db.String, nullable=False)
+    name = db.Column('Name', db.String(100), nullable=False)
 
     def __init__(self, name):
         self.name = name
@@ -112,7 +119,7 @@ class Service(db.Model):
 class ServiceCost(db.Model):
     __tablename__ = 'SERVICE_COST'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column('Name', db.String, nullable=False)
+    name = db.Column('Name', db.String(100), nullable=False)
     cost = db.Column('Cost', db.Float, nullable=False)
     service_ID = db.Column(db.Integer, db.ForeignKey('SERVICE.id'))
     service = db.relationship("Service")
@@ -226,7 +233,7 @@ class Report(db.Model):
 class ReportStatus(db.Model):
     __tablename__ = 'REPORT_STATUS'
     id = db.Column(db.Integer, primary_key=True)
-    status = db.Column(db.String, nullable=False)
+    status = db.Column(db.String(100), nullable=False)
 
     def __init__(self, status):
         self.status = status
