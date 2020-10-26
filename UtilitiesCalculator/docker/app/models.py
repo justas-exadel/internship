@@ -63,7 +63,7 @@ class Apartment(db.Model):
     house_ID = db.Column(db.Integer, db.ForeignKey('HOUSE.id'))
     house = db.relationship("House")
     status_ID = db.Column(db.Integer, db.ForeignKey(
-        'APARTMENT_STATUS.id'))
+        'APARTMENT_STATUS.id'), nullable=False)
     status = db.relationship("ApartmentStatus")
     renter = db.relationship("Renter")
 
@@ -90,7 +90,7 @@ class Renter(db.Model):
     email = db.Column('Email', db.String(100), nullable=False)
     phone = db.Column('Phone', db.String(100), nullable=True)
     apartment_ID = db.Column(db.Integer, db.ForeignKey(
-        'APARTMENT.id'))
+        'APARTMENT.id'), nullable=False)
     apartment = db.relationship('Apartment')
 
     def __init__(self, name, surname, email, phone):
