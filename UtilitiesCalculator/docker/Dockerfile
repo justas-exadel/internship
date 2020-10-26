@@ -40,8 +40,6 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-RUN mkdir -p Photos-Docker-Flask/reports
-
 RUN chmod +x /Photos-Docker-Flask/docker-entrypoint.sh
 
 CMD ["/bin/bash", "/Photos-Docker-Flask/docker-entrypoint.sh"]
