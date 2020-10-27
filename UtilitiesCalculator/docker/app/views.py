@@ -600,6 +600,7 @@ def send_report(id):
         try:
             smtp.login(EMAIL_HOST_USER, EMAIL_HOST_PASSWORD)
         except smtplib.SMTPAuthenticationError:
+            os.chdir('../')
             flash(
                 f'Username and Password not accepted!',
                 'danger')
